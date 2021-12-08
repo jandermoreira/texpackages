@@ -1,0 +1,380 @@
+%
+% DRAWDC: file
+% This file is loaded by ../drawdc.sty
+%
+
+\RequirePackage{tikz}
+%\RequirePackage{trimspaces}
+\RequirePackage{xstring}
+\RequirePackage{xparse}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Variables
+%
+
+\newlength{\dd@filestruct@recordwidth}
+\newlength{\dd@filestruct@recordheight}
+\newlength{\dd@filestruct@nodedistance}
+\newlength{\dd@filestruct@recordlinewidth}
+\newlength{\dd@filestruct@blocklinewidth}
+\newlength{\dd@filestruct@linktolinkdistance}
+\def\dd@filestruct@linecolor{.}
+\def\dd@filestruct@fieldwidthlist{2cm, 5cm, 3cm, 10cm, 2cm}
+\newif\ifdd@filestruct@showrrn
+\def\dd@filestruct@numberoffields{5}
+
+\newcommand{\dd@filestruct@defaults}{
+	\setlength{\dd@filestruct@recordwidth}{2cm}
+	\setlength{\dd@filestruct@recordheight}{0.5cm}
+	\setlength{\dd@filestruct@nodedistance}{0.05cm}
+	\def\dd@filestruct@recordsperblock{8}
+	\def\dd@filestruct@blockfont{\normalsize\rmfamily\itshape}
+	\def\dd@filestruct@recordfont{\normalsize\ttfamily}
+	\setlength{\dd@filestruct@recordlinewidth}{0.3pt}
+	\setlength{\dd@filestruct@blocklinewidth}{1pt}
+	\setlength{\dd@filestruct@linktolinkdistance}{4pt}
+	\dd@filestruct@showrrnfalse
+}
+\dd@filestruct@defaults
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Parameters
+%
+\pgfkeys{
+	/drawdc/file struct/.cd,
+	% ** list properties
+	start at/.store in = \dd@filestruct@startat,
+	name/.store in = \dd@filestruct@filename,
+	%
+	field widths/.store in = \dd@filestruct@fieldwidthlist,
+	%
+	record width/.code = {\setlength{\dd@filestruct@recordwidth}{#1}},
+	record height/.code = {\setlength{\dd@filestruct@recordheight}{#1}},
+	record font/.store in = \dd@filestruct@recordfont,
+	records per block/.store in = \dd@filestruct@recordsperblock,
+	%
+	start at/.store in = \dd@filestruct@currentxy,	
+	%
+	options/.code = {\def\dd@filestruct@options{/tikz/.cd, #1}},
+	%
+	show rrn/.code = {\dd@filestruct@showrrntrue},
+	hide rrn/.code = {\dd@filestruct@showrrnfalse},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Drawing stuff
+%
+\usetikzlibrary{calc, chains, scopes, math, fit, shapes.multipart}
+\tikzset{
+	every record/.style = {
+		draw = \dd@filestruct@linecolor,
+		inner sep = 2pt,
+		outer sep = 0pt,
+		text width = \dimexpr \dd@filestruct@recordwidth \relax,
+		minimum height = \dd@filestruct@recordheight,
+%		text depth = 0.005\dd@filestruct@recordheight,
+		font = \dd@filestruct@recordfont,
+		align = left,
+		line width = \dd@filestruct@recordlinewidth,
+		rectangle split,
+		rectangle split horizontal,
+		rectangle split parts = \dd@filestruct@numberoffields,
+		rectangle split allocate boxes = \dd@filestruct@numberoffields,
+		rectangle split empty part width = \dimexpr \dd@filestruct@recordwidth - 4.3pt \relax,
+	},
+	rnn index/.style = {
+		draw = none,
+		font = \footnotesize\itshape,
+		align = right,
+		anchor = east,
+	},
+	every fs link/.style = {
+		every link,
+		rounded corners,
+	},
+}
+
+
+\newcommand{\ddfslink}[3][1]{
+	\draw[every fs link] #2 -|
+		($#3 + (\dimexpr 1.8cm + #1\dd@filestruct@linktolinkdistance, 0)$) --
+		#3;
+}
+
+
+
+\newcommand{\dd@filestruct@settanchor}[1]{
+	\anchor{t#1}{
+%		\southwest
+		\northeast
+		\pgf@ya=\pgf@y
+		\pgf@y=\dimexpr \pgf@ya - 14\dd@filestruct@nodedistance 
+			- \dd@filestruct@linktolinkdistance*#1 \relax
+	}
+}
+\newcommand{\dd@filestruct@setbanchor}[1]{
+	\anchor{b#1}{
+		\southwest
+		\pgf@ya=\pgf@y
+		\northeast
+		\pgf@y=\dimexpr \pgf@ya + 4\dd@filestruct@nodedistance 
+			+ \dd@filestruct@linktolinkdistance*#1 \relax
+	}
+}
+\pgfdeclareshape{fsblock}{
+	\inheritsavedanchors[from=rectangle]
+	\inheritanchorborder[from=rectangle]
+	\foreach \anchor in {north, north west, north east, center, eest, east,
+		mid, midwest, mid east, base, base west, base east, south, west,
+		south east, south west}{\inheritanchor[from=rectangle]{\anchor}}
+	\inheritbackgroundpath[from=rectangle]
+	\foreach \l in {0, ..., 5}{
+		\expandafter\dd@filestruct@settanchor\expandafter{\l}
+		\expandafter\dd@filestruct@setbanchor\expandafter{\l}
+	}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% processing lists
+\RequirePackage{xparse}
+
+\NewDocumentCommand\dd@processrecordlist{%
+	>{\SplitList{,}}m%
+}{%
+	\ProcessList{#1}{\dd@processrecord}%
+}
+
+\NewDocumentCommand\dd@processblocklist{%
+	>{\SplitList{;}}m%
+}{%
+	\ProcessList{#1}{\dd@processblock}%
+}
+
+
+
+\newcounter{fieldcounter}
+\newcounter{blockcounter}
+\newcounter{recordcounter}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% fields
+
+%********************** https://tex.stackexchange.com/questions/247821/define-a-new-rectangular-node-with-several-anchor-points-in-tikz
+
+\newcommand{\dd@numbername}[1]{%
+	\ifcase#1\relax
+		\or %1
+		\or two%
+		\or three%
+		\or four%
+		\or five%
+		\or six%
+		\or seven%
+		\or eight%
+		\or nine%
+		\or ten%
+		\or eleven%
+		\or twelve%
+		\or thirteen%
+		\or fourteen%
+		\or fifteen%
+		\or sixteen%
+		\else ErroNoNumero%
+	\fi
+}
+\def\dd@comma{}
+\newcommand{\dd@processfield}[1]{%
+	\dd@comma#1%
+	\global\def\dd@comma{, }%
+}
+
+% begin https://tex.stackexchange.com/a/297521/64821
+\ExplSyntaxOn
+\NewDocumentCommand{\dd@addtolist}{mm}{
+	% #1 = items; #2 = list name
+	\seq_clear_new:c { dd_list_#2_seq }
+	\clist_map_inline:nn { #1 }{
+		\seq_put_right:cn { dd_list_#2_seq } { ##1 }
+	}
+}
+\NewDocumentCommand{\dd@addonetolist}{mm}{
+	% #1 = items; #2 = list name
+	\seq_put_right:cn { dd_list_#2_seq } { #1 }
+}
+\NewDocumentCommand{\dd@twolistloop}{mmm}{
+	% #1 = first list name; #2 = second list name; #3 = two argument macro
+	\seq_mapthread_function:ccN
+		{ dd_list_#1_seq } { dd_list_#2_seq } #3
+}
+\ExplSyntaxOff
+% end https://tex.stackexchange.com/a/297521/64821
+
+
+\newcommand{\dd@makefield}[2]{%
+	#1%
+	\stepcounter{fieldcounter}%
+	\nodepart[text width = #2]{\dd@numbername{\thefieldcounter}}%
+}
+
+
+\newcommand{\dd@fieldprocessing}[2]{%
+	\setcounter{fieldcounter}{0}%
+	\def\fulllist{#1}%
+	\toks0=\expandafter{#1}%
+	\expandafter\dd@addtolist\expandafter{\the\toks0}{fields}%
+	\ifnum\thefieldcounter<\dd@filestruct@numberoffields%
+		\foreach \i in {\thefieldcounter, ..., \dd@filestruct@numberoffields}{
+			\dd@addonetolist{x}{fields}%
+		}%
+	\fi%
+	\toks2=\expandafter{#2}%
+	\expandafter\dd@addtolist\expandafter{\the\toks2}{widths}%
+	\dd@twolistloop{fields}{widths}{\dd@makefield}%
+	\setcounter{fieldcounter}{1}%
+	\stepcounter{fieldcounter}%
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% records
+\newcommand{\dd@filestruct@drawrecord}[2][]{
+	\def\extraopt{#1}
+	\ifdd@filestruct@showrrn
+		\def\@saveshowrnn{\global\dd@filestruct@showrrntrue}
+	\else
+		\def\@saveshowrnn{\global\dd@filestruct@showrrnfalse}
+	\fi
+	\IfStrEq{#2}{skip}{
+		\def\@reclabel{\tiny\vdots}
+		\def\extraopt{#1, draw = none, text height = 0.5\dd@filestruct@recordheight, align = center}
+	}{
+		\IfStrEq{#2}{empty}{
+			\def\@reclabel{}
+			\def\extraopt{#1, draw = none, text height = 0.5\dd@filestruct@recordheight, align = center}
+			\global\dd@filestruct@showrrnfalse
+		}{
+			\IfStrEq{#2}{emptysymb}{
+				\def\@reclabel{\NullSymb}
+			}{
+				\def\@reclabel{%
+					\toks0=\expandafter{#2}%
+					\toks2=\expandafter{\dd@filestruct@fieldwidthlist}%
+					\dd@fieldprocessing{\the\toks0}{\the\toks2}%
+				}
+			}
+		}
+	}
+	{%group
+		\ddtikzset{every record/.append style = {\extraopt}}
+		\ifdd@filestruct@isfirst
+			\node[yshift = \@yshift,
+				on chain, every record, #1]
+				(\dd@filestruct@filename-\theblockcounter-\therecordcounter)
+				{\@reclabel};
+			\global\dd@filestruct@isfirstfalse
+		\else
+			\node [on chain, every record, #1] 	(\dd@filestruct@filename-\theblockcounter-\therecordcounter)
+			{\@reclabel};
+		\fi
+		\ifdd@filestruct@showrrn
+			\pgfmathparse{int(\theblockcounter *
+				\dd@filestruct@recordsperblock + \therecordcounter)}
+			\node[rnn index] at ($(\dd@filestruct@filename-\theblockcounter-\therecordcounter.west) - (0.25cm , 0)$) {\pgfmathresult};
+		\fi
+	}
+	\stepcounter{recordcounter}
+	\@saveshowrnn
+}
+
+\newcommand{\dd@processrecord}[1]{
+	\IfStrEq{#1}{stop}
+		{\global\@stoprecordstrue}
+		{
+			\toks0=\expandafter{#1}
+			\expandafter\dd@filestruct@drawrecord\expandafter{\the\toks0}
+		}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% blocks
+\newif\if@stoprecords
+\newcommand{\dd@processblock}[1]{
+%	\IfStrEq{#1}{\@label}{\def\@label{}}{}
+	\IfBeginWith{#1}{skip}{
+		\StrCut{#1}{ to }\@skip\@blocknumber
+		\ifx\@blocknumber\empty
+			\stepcounter{blockcounter}
+		\else
+			\setcounter{blockcounter}{\@blocknumber}
+		\fi
+		\node[on chain] {\scriptsize\vdots};
+	}{
+		\global\dd@filestruct@isfirsttrue
+		\setcounter{recordcounter}{0}
+		\@stoprecordsfalse
+		\toks0=\expandafter{#1}
+		\expandafter\dd@processrecordlist\expandafter{\the\toks0}
+		\pgfmathsetmacro\@remainingrecords{int(\dd@filestruct@recordsperblock -
+			\therecordcounter)}
+		\pgfmathsetmacro\@lastrecord{int(\dd@filestruct@recordsperblock - 1)}
+		\ifnum\@remainingrecords>0
+			\if@stoprecords
+				\foreach \rec in {1, ..., \@remainingrecords}{
+					\dd@filestruct@drawrecord[draw = none]{empty}
+				}
+			\else
+				\foreach \rec in {1, ..., \@remainingrecords}{
+					\dd@filestruct@drawrecord{}
+				}
+			\fi
+		\fi
+		
+		% block coordinates
+		\coordinate (nw) at ($(\dd@filestruct@filename-\theblockcounter-0.north west) + (-3\dd@filestruct@nodedistance, 2\dd@filestruct@nodedistance)$);
+		\coordinate (se) at ($(\dd@filestruct@filename-\theblockcounter-\@lastrecord.south east) +
+				(3\dd@filestruct@nodedistance, -2\dd@filestruct@nodedistance)$);
+		\node[fsblock, draw, line width = \dd@filestruct@blocklinewidth,
+			fit = {(nw) (se)}, inner sep = 0pt]
+			(\dd@filestruct@filename-\theblockcounter) {};
+		\IfStrEq{}{}{\def\@text{bloco $\theblockcounter$}}{\def\@text{XXXXX}}
+		\node [font = \dd@filestruct@blockfont, anchor = west] at
+			($(\dd@filestruct@filename-\theblockcounter-0.north east) + (2.\dd@filestruct@nodedistance, -4\dd@filestruct@nodedistance)$) {\@text\strut};
+		\stepcounter{blockcounter}
+		\global\def\@yshift{-3\dd@filestruct@nodedistance}
+	}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+% file
+\newif\ifdd@filestruct@isfirst
+\newcommand{\ddfsfile}[2][]{
+	\def\dd@filestruct@filename{file}%
+	\pgfkeys{
+		/drawdc/file struct/.cd,
+		#1,
+	}
+	{
+		\ddtikzset{%
+			start chain = \dd@filestruct@filename{} going below,
+			node distance = \dd@filestruct@nodedistance,
+		}
+		\setcounter{blockcounter}{0}
+		\def\@yshift{0pt}
+		\toks0=\expandafter{#2}
+		\dd@processblocklist{#2}
+	}
+}
+
+
+
+
+
+\newcommand{\ddfsset}[1]{
+	\pgfkeys{/drawdc/file struct/.cd, #1}
+}
+
+%% EOF

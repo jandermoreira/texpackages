@@ -1,0 +1,259 @@
+%
+% DRAWDC: matrix
+% This file is loaded by ../drawdc.sty
+%
+
+\RequirePackage{xcolor}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Variables
+%
+
+% ** matrix properties
+\def\drawdc@matrix@numberofrows{4}
+\def\drawdc@matrix@numberofcols{3}
+\newlength{\drawdc@matrix@x}\setlength{\drawdc@matrix@x}{0cm}
+\newlength{\drawdc@matrix@y}\setlength{\drawdc@matrix@y}{0cm}
+\newlength{\drawdc@matrix@bordersep}\setlength{\drawdc@matrix@bordersep}{0.05cm}
+
+% ** cell properties
+\def\drawdc@matrix@cellfont{\normalsize\normalfont}
+% to remove: \def\drawdc@matrix@celllabel{cell}
+\newlength{\drawdc@matrix@cellwidth}\setlength{\drawdc@matrix@cellwidth}{0.9cm}
+\newlength{\drawdc@matrix@cellheight}\setlength{\drawdc@matrix@cellheight}{0.9cm}
+\newlength{\drawdc@matrix@cellsep}\setlength{\drawdc@matrix@cellsep}{0.1cm}
+\def\drawdc@matrix@cellanchor{center}
+
+% ** index properties
+\def\drawdc@matrix@indexfont{\small\ttfamily\itshape}
+\newlength{\drawdc@matrix@indexdistance}\setlength{\drawdc@matrix@indexdistance}{0.1cm}
+\newlength{\drawdc@matrix@indexxshift}\setlength{\drawdc@matrix@indexxshift}{0cm}
+\newlength{\drawdc@matrix@indexyshift}\setlength{\drawdc@matrix@indexyshift}{0cm}
+\def\drawdc@matrix@firstrowindex{0}
+\def\drawdc@matrix@firstrcolindex{0}
+
+% ** drawing options
+\def\drawdc@matrix@linecolor{.}
+\newlength{\drawdc@matrix@linewidth}\setlength{\drawdc@matrix@linewidth}{0.5pt}
+\newif\ifdrawdc@matrix@hideindexes \drawdc@matrix@hideindexesfalse
+\newif\ifdrawdc@matrix@hidecellborder \drawdc@matrix@hidecellborderfalse
+\newif\ifdrawdc@matrix@hidetopborder \drawdc@matrix@hidetopborderfalse
+\newif\ifdrawdc@matrix@hidebottomborder \drawdc@matrix@hidebottomborderfalse
+\newif\ifdrawdc@matrix@hideleftborder \drawdc@matrix@hideleftborderfalse
+\newif\ifdrawdc@matrix@hiderightborder \drawdc@matrix@hiderightborderfalse
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Parameters
+%
+\pgfkeys{
+	/drawdc/matrix/.cd,
+	% ** array properties
+	rows/.code = {\def\drawdc@matrix@numberofrows{#1}},
+	cols/.code = {\def\drawdc@matrix@numberofcols{#1}},
+	columns/.code = {\def\drawdc@matrix@numberofcols{#1}},
+	x/.code = {\setlength{\drawdc@matrix@x}{#1}},
+	y/.code = {\setlength{\drawdc@matrix@y}{#1}},
+	border sep/.code = {\setlength{\drawdc@matrix@bordersep}{#1}},
+	%
+	% ** cell properties
+	cell font/.code = \def\drawdc@matrix@cellfont{#1},
+	cell label/.store in = \drawdc@matrix@celllabel,
+	cell label/.value required,
+	cell width/.code = \setlength{\drawdc@matrix@cellwidth}{#1},
+	cell height/.code = \setlength{\drawdc@matrix@cellheight}{#1},
+	cell sep/.code = \setlength{\drawdc@matrix@cellsep}{#1},
+	cell anchor/.code = \def\drawdc@matrix@cellanchor{#1},
+	%
+	% ** index properties
+	index font/.store in = \drawdc@matrix@indexfont,
+	index font/.value required,
+	index distance/.code = \setlength{\drawdc@matrix@indexdistance}{#1},
+	index x shift/.code = \setlength{\drawdc@matrix@indexxshift}{#1},
+	index y shift/.code = \setlength{\drawdc@matrix@indexyshift}{#1},
+	first index/.code = \def\drawdc@matrix@firstindex{#1},
+	start index at/.code = \def\drawdc@matrix@startindexat{#1},
+	stop index at/.code = \def\drawdc@matrix@stopindexat{#1},
+	%
+	% ** drawing options
+	line color/.code = \colorlet{\drawdc@matrix@linecolor}{#1},
+	line width/.code = \setlength{\drawdc@matrix@linewidth}{#1},
+	hide indexes/.code = \drawdc@matrix@hideindexestrue,
+	show indexes/.code = \drawdc@matrix@hideindexesfalse;
+	%hide cell border/.code = \drawdc@matrix@hidecellbordertrue,
+	%show cell border/.code = \drawdc@matrix@hidecellborderfalse,
+	%hide top border/.code = \drawdc@matrix@hidetopbordertrue,
+	%show top border/.code = \drawdc@matrix@hidetopborderfalse,
+	%hide bottom border/.code = \drawdc@matrix@hidebottombordertrue,
+	%show bottom border/.code = \drawdc@matrix@hidebottomborderfalse,
+	%hide left border/.code = \drawdc@matrix@hideleftbordertrue,
+	%show left border/.code = \drawdc@matrix@hideleftborderfalse,
+	%hide right border/.code = \drawdc@matrix@hiderightbordertrue,
+	%show right border/.code = \drawdc@matrix@hiderightborderfalse,
+	%hide borders/.style = {
+	%	hide top border,
+	%	hide bottom border,
+	%	hide left border,
+	%	hide right border
+	%},
+	%show borders/.style = {
+	%	show top border,
+	%	show bottom border,
+	%	show left border,
+	%	show right border
+	%},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Drawing stuff
+%
+\RequirePackage{xstring}
+\RequirePackage{tikz}
+\usetikzlibrary{calc, arrows, arrows.meta}
+
+% Extra variables
+\newlength{\drawdc@matrix@xcelldistance}
+\newlength{\drawdc@matrix@ycelldistance}
+\newlength{\drawdc@matrix@xindexdistance}
+\newlength{\drawdc@matrix@yindexdistance}
+
+\newcommand{\ddmatrix}[2][]{{%
+	% #1: options
+	% #2: base label for cells
+	\pgfkeys{
+		/drawdc/matrix/.cd,
+		#1, % options
+		cell label = #2, % mandatory
+	}%
+	%
+	\pgfmathparse{int(\drawdc@matrix@numberofrows - 1)}%
+	\edef\drawdc@matrix@lastrow{\pgfmathresult}%
+	\pgfmathparse{int(\drawdc@matrix@numberofcols - 1)}%
+	\edef\drawdc@matrix@lastcol{\pgfmathresult}%
+	\setlength{\drawdc@matrix@xcelldistance}{\dimexpr \drawdc@matrix@cellwidth + \drawdc@matrix@cellsep \relax}%
+	\setlength{\drawdc@matrix@ycelldistance}{\dimexpr \drawdc@matrix@cellheight + \drawdc@matrix@cellsep \relax}%
+	\setlength{\drawdc@matrix@yindexdistance}{\dimexpr \drawdc@matrix@indexdistance + \drawdc@matrix@bordersep \relax}
+	\setlength{\drawdc@matrix@xindexdistance}{0pt}
+	\def\drawdc@matrix@indexcellanchor{north},
+	\def\drawdc@matrix@indexnodeanchor{south},
+	\def\drawdc@matrix@indexalign{center},
+	\ifdrawdc@matrix@hidecellborder
+		\def\drawdc@matrix@cellbordercolor{none}
+	\else
+		\def\drawdc@matrix@cellbordercolor{\drawdc@matrix@linecolor}
+	\fi
+	\foreach \mr in {0, ..., \drawdc@matrix@lastrow} 
+		\foreach \mc in {0, ..., \drawdc@matrix@lastcol}{
+			\node[
+				anchor = \drawdc@matrix@cellanchor,
+				draw = \drawdc@matrix@cellbordercolor,
+				minimum height = \drawdc@matrix@cellheight,
+				minimum width = \drawdc@matrix@cellwidth,
+				line width = \drawdc@matrix@linewidth,
+			]
+				at (\drawdc@matrix@x + \mc * \drawdc@matrix@xcelldistance,
+					\drawdc@matrix@y - \mr * \drawdc@matrix@ycelldistance)
+				(\drawdc@matrix@celllabel_\mr_\mc) {};
+		}
+		
+	\ifdrawdc@matrix@hideindexes
+	\else
+		\foreach \n[count = \nn from 0] in {0, ..., \drawdc@matrix@lastcol}
+%			{\drawdc@matrix@startindexat, ..., \drawdc@matrix@stopindexat}
+			\node [%
+%				baseline, draw,
+				font = \drawdc@matrix@indexfont,
+%%				minimum height = \drawdc@matrix@cellheight,
+				anchor = \drawdc@matrix@indexnodeanchor, 
+				align = \drawdc@matrix@indexalign,
+				text depth = 0.5ex,
+				text width = 1.5cm, % yep, hardcoded!
+			] at ($(\drawdc@matrix@celllabel_0_\nn.north)
+				+ (\drawdc@matrix@indexxshift, \drawdc@matrix@indexyshift)
+				+ (-\drawdc@matrix@xindexdistance, \drawdc@matrix@yindexdistance)$)
+			{\n};
+
+		\foreach \n[count = \nn from 0] in {0, ..., \drawdc@matrix@lastrow}
+%			{\drawdc@matrix@startindexat, ..., \drawdc@matrix@stopindexat}
+			\node [%
+%				draw, dotted,
+				font = \drawdc@matrix@indexfont,
+%				minimum height = \drawdc@matrix@cellheight,
+				anchor = east, 
+				align = right,
+				text depth = 0.5ex,
+%				text width = 1.5cm, % yep, hardcoded!
+			] at ($(\drawdc@matrix@celllabel_\nn_0.west)
+				+ (\drawdc@matrix@indexxshift, \drawdc@matrix@indexyshift)
+				+ (-\drawdc@matrix@yindexdistance, \drawdc@matrix@xindexdistance)$)
+%				+ (0, 0)$)
+			{\n};
+	\fi
+	% borders 
+	\coordinate (topleft) at ($(\drawdc@matrix@celllabel_0_0.north west) +
+		 (-\drawdc@matrix@bordersep, \drawdc@matrix@bordersep)$);
+	\coordinate (bottomright) at ($(\drawdc@matrix@celllabel_\drawdc@matrix@lastrow_\drawdc@matrix@lastcol.south east) +
+		(\drawdc@matrix@bordersep, -\drawdc@matrix@bordersep)$);
+	\draw[line width = \drawdc@matrix@linewidth] (topleft) -| (bottomright) -| cycle;
+%	\IfStrEq{\drawdc@matrix@axis}{horizontal}{
+%		% horizontal
+%		\coordinate (topright) at ($(\drawdc@matrix@celllabel\drawdc@matrix@lastcell.north east) +
+%			(\drawdc@matrix@bordersep, \drawdc@matrix@bordersep)$);
+%		\coordinate (bottomleft) at ($(\drawdc@matrix@celllabel0.south west) +
+%			(-\drawdc@matrix@bordersep, -\drawdc@matrix@bordersep)$);
+%	}{
+%		% vertical
+%		\coordinate (topright) at ($(\drawdc@matrix@celllabel0.north east) +
+%			(\drawdc@matrix@bordersep, \drawdc@matrix@bordersep)$);
+%		\coordinate (bottomleft) at ($(\drawdc@matrix@celllabel\drawdc@matrix@lastcell.south west) +
+%			(-\drawdc@matrix@bordersep, -\drawdc@matrix@bordersep)$);
+%	}
+%	\ifdrawdc@matrix@hidetopborder
+%	\else
+%		\draw[line width = \drawdc@matrix@linewidth]
+%			($(topleft) - (0.5\drawdc@matrix@linewidth, 0)$) -- ($(topright) + (0.5\drawdc@matrix@linewidth, 0)$);
+%	\fi
+%	\ifdrawdc@matrix@hidebottomborder
+%	\else
+%		\draw[line width = \drawdc@matrix@linewidth]
+%			($(bottomleft) - (0.5\drawdc@matrix@linewidth, 0)$) -- ($(bottomright) + (0.5\drawdc@matrix@linewidth, 0)$);
+%	\fi
+%	\ifdrawdc@matrix@hideleftborder
+%	\else
+%		\draw[line width = \drawdc@matrix@linewidth]
+%			(topleft)-- (bottomleft);
+%	\fi
+%	\ifdrawdc@matrix@hiderightborder
+%	\else
+%		\draw[line width = \drawdc@matrix@linewidth]
+%			(topright) -- (bottomright);
+%	\fi
+}}
+
+
+%
+%\newcommand{\ddfillmatrix}[3][]{{
+%	\pgfkeys{
+%		/drawdc/matrix/.cd,
+%		#1,
+%		cell label = #2,
+%	}
+%	\foreach \v[count = \idx from 0] in {#3}
+%		\node[font = \drawdc@matrix@cellfont] at (\drawdc@matrix@celllabel\idx) {\v};
+%}}
+
+\newcommand{\ddmatrixcells}[3][]{{
+	\pgfkeys{
+		/drawdc/matrix/.cd,
+		#1,
+		cell label = #2,
+	}
+	\foreach \row/\col/\v in {#3}
+		\node[font = \drawdc@matrix@cellfont] at (\drawdc@matrix@celllabel_\row_\col) {\v};
+}}
+%
+%\newcommand{\ddarrayset}[1]{
+%	\pgfkeys{/drawdc/matrix/.cd, #1}
+%}
+
+%% EOF
