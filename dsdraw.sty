@@ -4,7 +4,7 @@
 %
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{dsdraw}[2021/11/28 DSDRAW: tools %
-	for drawing data structures and more]
+	for drawing data structures]
 
 
 \RequirePackage{pgfopts} % for \ProcessPgfOptions
@@ -14,9 +14,10 @@
 \RequirePackage{xstring} % in linked lists
 \input{binhex}
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Symbols
+% Symbols and control sequences
 
 % the empty symbol
 \newcommand{\EmptySymb}{%
@@ -27,6 +28,9 @@
 \newcommand{\NullSymb}{%
 	\mbox{\scalebox{1.1}{\raisebox{0.1em}{$\boldsymbol{\oslash}$}}}%
 }
+
+\def\dsbreakcurved{}
+\def\dsbreakstraight{}
 
 
 
@@ -41,13 +45,13 @@
 	\pgfkeysalsofrom{\ekeysmacro}%
 }
 
-% dscalclength: calculates the length in points of the expression and
-% 	stores the result in \dslengthresult
-\newlength{\dslengthresult}
-\newcommand{\dscalclength}[1]{%
-	\pgfmathseseqengthmacro{\@length}{#1}%
-	\global\seseqength{\dslengthresult}{\@length}%
-}
+%% dscalclength: calculates the length in points of the expression and
+%% 	stores the result in \dslengthresult
+%\newlength{\dslengthresult}
+%\newcommand{\dscalclength}[1]{%
+%	\pgfmathseseqengthmacro{\@length}{#1}%
+%	\global\seseqength{\dslengthresult}{\@length}%
+%}
 
 
 \ExplSyntaxOn
@@ -105,21 +109,41 @@
 }
 \ExplSyntaxOff
 
-% usedslibrary: load libraries
+% ds@loadlibrary: load a single library
+%	#1: library name
 \newcommand{\ds@loadlibrary}[1]{%
-	\PackageWarning{dsdraw}{Loading #1.}
 	\ifcsname ds@library#1loaded\endcsname%
+		%\PackageWarning{dsdraw}{Library '#1' already loaded.}%
 	\else%
-		\IfFileExists{#1.code.tex}{%
+		\IfFileExists{#1.code.tex}{
 			\makeatletter%
 			\input{#1.code.tex}%
-			\makeatother%
-			\expandafter\def\csname ds@library#1loaded\endcsname{}%
-		}{%
+			\makeatother
+			\expandafter\def\csname ds@library#1loaded\endcsname{defined}%
+		}{
 			\PackageWarning{dsdraw}{Couldn't find any library named '#1'.}%
-		}%
+		}
 	\fi%
 }
+
+% ds@requirelibrary: load a single library (internal use)
+%	#1: library name
+\newcommand{\ds@requirelibrary}[1]{%
+	\ifcsname ds@library#1loaded\endcsname%
+		%\PackageWarning{dsdraw}{Library '#1' already loaded.}%
+	\else%
+		\IfFileExists{#1.code.tex}{
+			\makeatletter%
+			\input{#1.code.tex}%
+			\expandafter\def\csname ds@library#1loaded\endcsname{defined}%
+		}{
+			\PackageError{dsdraw}{Couldn't find any library named '#1'.}%
+		}
+	\fi%
+}
+
+% usedslibrary: loads a list of libraries
+%  #1: comma-separated list of libraries
 \DeclareDocumentCommand{\usedslibrary}{%
 	>{\SplitList{,}}m%
 }{%
@@ -151,6 +175,7 @@
 % Package options: import libraries
 \pgfkeys{
 	dsdraw/.cd,
+	sourcecodepro/.code = {\RequirePackage{sourcecodepro}},
 	.unknown/.code = {\ds@loadlibrary{\pgfkeyscurrentname}},
 }
 \ProcessPgfPackageOptions{/dsdraw}

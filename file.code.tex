@@ -1,372 +1,243 @@
+%%
+%% DSDRAW: file
+%% This file is loaded by ../dsdraw.sty
+%%
 %
-% DRAWDC: file
-% This file is loaded by ../drawdc.sty
+\ds@requirelibrary{record}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Options
 %
+
+\pgfkeys{
+	/dsdraw/file/.cd,
+	%
+	show frame/.is if = ds@file@showframe,
+	hide frame/.code = {\ds@file@showframefalse},
+	%
+	name/.store in = \ds@file@chainname,
+	record height/.store in = \ds@file@recordheight,
+	show offsets/.is if = ds@file@showoffsets,
+	hide offsets/.code = {\ds@file@showoffsetsfalse},
+	%
+	records/.store in = \ds@file@recordsinblock,
+	%
+	record/.code = {\dsrecordset{#1}},
+	tikz/.code = {\dstikzset{#1}},
+}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Variables
 %
 
-\newlength{\ds@file@recordwidth}
-\newlength{\ds@file@recordheight}
-\newlength{\ds@file@nodedistance}
-\newlength{\ds@file@recordlinewidth}
-\newlength{\ds@file@blocklinewidth}
-\newlength{\ds@file@linktolinkdistance}
-\def\ds@file@linecolor{.}
-\def\ds@file@fieldwidthlist{2cm, 5cm, 3cm, 10cm, 2cm}
-\newif\ifds@file@showrrn
-\def\ds@file@numberoffields{5}
+\newcounter{dsfrecordnumber} % current number of records in file
+\newcounter{dsfbytenumber} % current number of bytes in file
+\newcounter{dsfblocknumber} % current block
+\newcounter{dsfrecordnumberinblock} % number of records in block
 
-\newcommand{\ds@file@defaults}{
-	\def\ds@file@filename{file}%
-	\setlength{\ds@file@recordwidth}{2cm}
-	\setlength{\ds@file@recordheight}{0.5cm}
-	\setlength{\ds@file@nodedistance}{0.05cm}
-	\def\ds@file@recordsperblock{8}
-	\def\ds@file@blockfont{\normalsize\rmfamily\itshape}
-	\def\ds@file@recordfont{\normalsize\ttfamily}
-	\setlength{\ds@file@recordlinewidth}{0.3pt}
-	\setlength{\ds@file@blocklinewidth}{1pt}
-	\setlength{\ds@file@linktolinkdistance}{4pt}
-	\ds@file@showrrnfalse
-}
-\ds@file@defaults
+\newif\ifds@file@firstblockinfile
+\newif\ifds@file@showframe
+\newif\ifds@file@showoffsets
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Parameters
+% Defaults
 %
+
 \pgfkeys{
 	/dsdraw/file/.cd,
-	% ** list properties
-	start at/.store in = \ds@file@startat,
-	name/.store in = \ds@file@filename,
-	%
-	field widths/.store in = \ds@file@fieldwidthlist,
-	%
-	record width/.code = {\setlength{\ds@file@recordwidth}{#1}},
-	record height/.code = {\setlength{\ds@file@recordheight}{#1}},
-	record font/.store in = \ds@file@recordfont,
-	records per block/.store in = \ds@file@recordsperblock,
-	%
-	start at/.store in = \ds@file@currentxy,	
-	%
-	options/.code = {\def\ds@file@options{/tikz/.cd, #1}},
-	%
-	show rrn/.code = {\ds@file@showrrntrue},
-	hide rrn/.code = {\ds@file@showrrnfalse},
+	name = file,
+	hide frame,
+	records = 0, % i.e., any
+	record height = 1em,
+	hide offsets,
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Drawing stuff
 %
-\usetikzlibrary{calc, chains, scopes, math, fit, shapes.multipart}
+
 \tikzset{
-	every record/.style = {
-		draw = \ds@file@linecolor,
-		inner sep = 2pt,
-		outer sep = 0pt,
-		text width = \dimexpr \ds@file@recordwidth \relax,
-		minimum height = \ds@file@recordheight,
-%		text depth = 0.005\ds@file@recordheight,
-		font = \ds@file@recordfont,
-		align = left,
-		line width = \ds@file@recordlinewidth,
-		rectangle split,
-		rectangle split horizontal,
-		rectangle split parts = \ds@file@numberoffields,
-		rectangle split allocate boxes = \ds@file@numberoffields,
-		rectangle split empty part width = \dimexpr \ds@file@recordwidth - 4.3pt \relax,
-	},
-	rnn index/.style = {
-		draw = none,
-		font = \footnotesize\itshape,
-		align = right,
-		anchor = east,
-	},
-	every fs link/.style = {
-		every link,
-		rounded corners,
-	},
-}
-
-
-\newcommand{\dsfilelink}[3][1]{
-	\draw[every fs link] #2 -|
-		($#3 + (\dimexpr 1.8cm + #1\ds@file@linktolinkdistance, 0)$) --
-		#3;
-}
-
-
-
-\newcommand{\ds@file@settanchor}[1]{
-	\anchor{t#1}{
-%		\southwest
-		\northeast
-		\pgf@ya=\pgf@y
-		\pgf@y=\dimexpr \pgf@ya - 14\ds@file@nodedistance 
-			- \ds@file@linktolinkdistance*#1 \relax
-	}
-}
-\newcommand{\ds@file@setbanchor}[1]{
-	\anchor{b#1}{
-		\southwest
-		\pgf@ya=\pgf@y
-		\northeast
-		\pgf@y=\dimexpr \pgf@ya + 4\ds@file@nodedistance 
-			+ \ds@file@linktolinkdistance*#1 \relax
-	}
-}
-\pgfdeclareshape{fsblock}{
-	\inheritsavedanchors[from=rectangle]
-	\inheritanchorborder[from=rectangle]
-	\foreach \anchor in {north, north west, north east, center, eest, east,
-		mid, midwest, mid east, base, base west, base east, south, west,
-		south east, south west}{\inheritanchor[from=rectangle]{\anchor}}
-	\inheritbackgroundpath[from=rectangle]
-	\foreach \l in {0, ..., 5}{
-		\expandafter\ds@file@settanchor\expandafter{\l}
-		\expandafter\ds@file@setbanchor\expandafter{\l}
-	}
-}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% processing lists
-
-\NewDocumentCommand\ds@processrecordlist{%
-	>{\SplitList{,}}m%
-}{%
-	\ProcessList{#1}{\ds@processrecord}%
-}
-
-\NewDocumentCommand\ds@processblocklist{%
-	>{\SplitList{;}}m%
-}{%
-	\ProcessList{#1}{\ds@processblock}%
-}
-
-
-
-\newcounter{fieldcounter}
-\newcounter{blockcounter}
-\newcounter{recordcounter}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% fields
-
-%********************** https://tex.stackexchange.com/questions/247821/define-a-new-rectangular-node-with-several-anchor-points-in-tikz
-
-\newcommand{\ds@numbername}[1]{%
-	\ifcase#1\relax
-		\or %1
-		\or two%
-		\or three%
-		\or four%
-		\or five%
-		\or six%
-		\or seven%
-		\or eight%
-		\or nine%
-		\or ten%
-		\or eleven%
-		\or twelve%
-		\or thirteen%
-		\or fourteen%
-		\or fifteen%
-		\or sixteen%
-		\else ErroNoNumero%
-	\fi
-}
-\def\ds@comma{}
-\newcommand{\ds@processfield}[1]{%
-	\ds@comma#1%
-	\global\def\ds@comma{, }%
-}
-
-% begin https://tex.stackexchange.com/a/297521/64821
-\ExplSyntaxOn
-\NewDocumentCommand{\ds@addtolist}{mm}{
-	% #1 = items; #2 = list name
-	\seq_clear_new:c { dd_list_#2_seq }
-	\clist_map_inline:nn { #1 }{
-		\seq_put_right:cn { dd_list_#2_seq } { ##1 }
-	}
-}
-\NewDocumentCommand{\ds@addonetolist}{mm}{
-	% #1 = items; #2 = list name
-	\seq_put_right:cn { dd_list_#2_seq } { #1 }
-}
-\NewDocumentCommand{\ds@twolistloop}{mmm}{
-	% #1 = first list name; #2 = second list name; #3 = two argument macro
-	\seq_mapthread_function:ccN
-		{ dd_list_#1_seq } { dd_list_#2_seq } #3
-}
-\ExplSyntaxOff
-% end https://tex.stackexchange.com/a/297521/64821
-
-
-\newcommand{\ds@makefield}[2]{%
-	#1%
-	\stepcounter{fieldcounter}%
-	\nodepart[text width = #2]{\ds@numbername{\thefieldcounter}}%
-}
-
-
-\newcommand{\ds@fieldprocessing}[2]{%
-	\setcounter{fieldcounter}{0}%
-	\def\fulllist{#1}%
-	\toks0=\expandafter{#1}%
-	\expandafter\ds@addtolist\expandafter{\the\toks0}{fields}%
-	\ifnum\thefieldcounter<\ds@file@numberoffields%
-		\foreach \i in {\thefieldcounter, ..., \ds@file@numberoffields}{
-			\ds@addonetolist{x}{fields}%
-		}%
-	\fi%
-	\toks2=\expandafter{#2}%
-	\expandafter\ds@addtolist\expandafter{\the\toks2}{widths}%
-	\ds@twolistloop{fields}{widths}{\ds@makefield}%
-	\setcounter{fieldcounter}{1}%
-	\stepcounter{fieldcounter}%
-}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% records
-\newcommand{\ds@file@drawrecord}[2][]{
-	\node[on chain] (x) {x};
-		\begin{dsrecord*}
-			\dsfieldfixed*{jander}{10}
-		\end{dsrecord*}
-%	\def\extraopt{#1}
-%	\ifds@file@showrrn
-%		\let\@saveshowrnn{\global\ds@file@showrrntrue}
-%	\else
-%		\let\@saveshowrnn{\global\ds@file@showrrnfalse}
-%	\fi
-%	\IfStrEq{#2}{skip}{
-%		\def\@reclabel{\tiny\vdots}
-%		\def\extraopt{#1, draw = none, text height = 0.5\ds@file@recordheight, align = center}
-%	}{
-%		\IfStrEq{#2}{empty}{
-%			\def\@reclabel{}
-%			\def\extraopt{#1, draw = none, text height = 0.5\ds@file@recordheight, align = center}
-%			\global\ds@file@showrrnfalse
-%		}{
-%			\IfStrEq{#2}{emptysymb}{
-%				\def\@reclabel{\NullSymb}
-%			}{
-%				\def\@reclabel{#2%
-%					\toks0=\expandafter{#2}%
-%					\toks2=\expandafter{\ds@file@fieldwidthlist}%
-%					\ds@fieldprocessing{\the\toks0}{\the\toks2}%
-%				}
-%			}
-%		}
-%	}
-%	{%group
-%		\dstikzset{every record/.append style = {\extraopt}}
-%		\ifds@file@isfirst
-%			\node[yshift = \@yshift,
-%				on chain, every record, #1]
-%				(\ds@file@filename-\theblockcounter-\therecordcounter)
-%				{\@reclabel};
-%			\global\ds@file@isfirstfalse
-%		\else
-%			\node [on chain, every record, #1] 	(\ds@file@filename-\theblockcounter-\therecordcounter)
-%			{\@reclabel};
-%		\fi
-%		\ifds@file@showrrn
-%			\pgfmathparse{int(\theblockcounter *
-%				\ds@file@recordsperblock + \therecordcounter)}
-%			\node[rnn index] at ($(\ds@file@filename-\theblockcounter-\therecordcounter.west) - (0.25cm , 0)$) {\pgfmathresult};
-%		\fi
-%	}
-%	\stepcounter{recordcounter}
-%	\@saveshowrnn
-}
-
-\newcommand{\ds@processrecord}[1]{
-	\IfStrEq{#1}{stop}
-		{\global\@stoprecordstrue}
-		{
-			\toks0=\expandafter{#1}
-			\expandafter\ds@file@drawrecord\expandafter{\the\toks0}
+	file/.style = {
+		inner xsep = 0.1em,
+		inner ysep = 0.1em,
+		fit={
+			(\ds@file@chainname-record-0.north west)
+			(current bounding box.south east)
 		}
+	},
+	block/.style = {
+		draw,
+		inner xsep = 0.3em,
+		inner ysep = 0.2em,
+		fit = {
+			(\ds@file@chainname-record-\@firstrecordinblock.north west)
+%			(current bounding box.south east)
+			(\ds@file@chainname-record-\@lastrecordinblock.south east)
+		},
+	},
+	file record/.style = {
+%		draw = yellow, dashed, very thick, text width = 2em,
+		minimum height = \ds@file@recordheight,
+		inner sep = 0pt,
+		outer sep = 0pt,
+		anchor = north west,
+		on chain,
+	},
 }
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% blocks
-\newif\if@stoprecords
-\newcommand{\ds@processblock}[1]{
-%	\IfStrEq{#1}{\@label}{\def\@label{}}{}
-	\IfBeginWith{#1}{skip}{
-		\StrCut{#1}{ to }\@skip\@blocknumber
-		\ifx\@blocknumber\empty
-			\stepcounter{blockcounter}
-		\else
-			\setcounter{blockcounter}{\@blocknumber}
-		\fi
-		\node[on chain] {\scriptsize\vdots};
-	}{
-		\global\ds@file@isfirsttrue
-		\setcounter{recordcounter}{0}
-		\@stoprecordsfalse
-		\toks0=\expandafter{#1}
-		\expandafter\ds@processrecordlist\expandafter{\the\toks0}
-		\pgfmathsetmacro\@remainingrecords{int(\ds@file@recordsperblock -
-			\therecordcounter)}
-		\pgfmathsetmacro\@lastrecord{int(\ds@file@recordsperblock - 1)}
-		\ifnum\@remainingrecords>0
-			\if@stoprecords
-				\foreach \rec in {1, ..., \@remainingrecords}{
-					\ds@file@drawrecord[draw = none]{empty}
-				}
-			\else
-				\foreach \rec in {1, ..., \@remainingrecords}{
-					\ds@file@drawrecord{}
-				}
-			\fi
-		\fi
-		
-		% block coordinates
-		\coordinate (nw) at ($(\ds@file@filename-\theblockcounter-0.north west) + (-3\ds@file@nodedistance, 2\ds@file@nodedistance)$);
-		\coordinate (se) at ($(\ds@file@filename-\theblockcounter-\@lastrecord.south east) +
-				(3\ds@file@nodedistance, -2\ds@file@nodedistance)$);
-		\node[fsblock, draw, line width = \ds@file@blocklinewidth,
-			fit = {(nw) (se)}, inner sep = 0pt]
-			(\ds@file@filename-\theblockcounter) {};
-		\IfStrEq{}{}{\def\@text{bloco $\theblockcounter$}}{\def\@text{XXXXX}}
-		\node [font = \ds@file@blockfont, anchor = west] at
-			($(\ds@file@filename-\theblockcounter-0.north east) + (2.\ds@file@nodedistance, -4\ds@file@nodedistance)$) {\@text\strut};
-		\stepcounter{blockcounter}
-		\global\def\@yshift{-3\ds@file@nodedistance}
-	}
-}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-% file
-\newif\ifds@file@isfirst
-\newcommand{\dsfile}[2][]{{
-	\pgfkeys{
-		/drawdc/file/.cd,
+\ExplSyntaxOn
+% ds_call_dsnamedrecord:nnn: auxiliary function to call \dsnamedrecord
+%	with all parameters
+%	#1: options for \dsrecordset
+%	#2: record name (see \dsnewnamedrecord)
+%	#3: comma-separated list of fields contents
+\cs_new_protected:Npn \ds_call_dsnamedrecord:nnn #1#2#3 {
+	\begingroup
+	\edef\@name{\ds@file@chainname-record-\thedsfrecordnumber}
+	\dsrecordset{
+		name = \@name,
 		#1,
 	}
-	{
-		\dstikzset{%
-			start chain = \ds@file@filename{} going below,
-			node distance = \ds@file@nodedistance,
-		}
-		\setcounter{blockcounter}{0}
-		\def\@yshift{0pt}
-		\toks0=\expandafter{#2}
-		\ds@processblocklist{#2}
+	\xdef\ds@file@currentrecordname{\ds@record@chainname} % hack!
+	\dsnamedrecord*[#1]{#2}{#3}
+	\endgroup
+}
+
+% ds@file@drawrecordhelp: process a single record (called from
+%	\ds@file@drwnamedrecord) and check if there are optional configuration
+%	#1: record name (see \dsnewnamedrecord)
+%	#2: the record: comma-separated list of fields + (optional) "/" list
+%		of comma-separated list of record options
+\NewExpandableDocumentCommand{\ds@file@drawrecordhelper} { mm } {
+	\seq_set_split:Nnn \l_fields_options_seq { / } { #2 }
+	\tl_set:Nn \l_fields_tl { \seq_item:Nn \l_fields_options_seq { 1 } }
+	\tl_set:Nn \l_options_tl { \seq_item:Nn \l_fields_options_seq { 2 } }
+	\exp_args:Neee \ds_call_dsnamedrecord:nnn
+		{ \l_options_tl } { #1 } { \l_fields_tl }
+}
+\ExplSyntaxOff
+
+% ds@file@drawnamedrecord: handles positioning and scope for each record
+%	#1: record name (see \dsnewnamedrecord)
+%	#2: the record: comma-separated list of fields + (optional) "/" list
+%		of comma-separated list of record options
+\NewDocumentCommand{\ds@file@drawnamedrecord} {mm} {
+	\edef\@currentrecord{\ds@file@chainname-record-\thedsfrecordnumber}
+	\node[file record] (\@currentrecord) {}; % reference node
+	\begin{scope}[shift = (\@currentrecord.north west)]
+		\ds@file@drawrecordhelper{#1}{#2}
+		\ifds@file@showoffsets
+			\node[anchor = east, font = \ttfamily, scale = 0.7]
+				at ($(\@currentrecord.west) - (1em, 0)$) {\nhex{8}{\thedsfbytenumber}};
+		\fi
+		\addtocounter{dsfbytenumber}{\thedsrbytenumber}
+		\pgfnodealias{\@currentrecord}{\ds@file@currentrecordname}
+		\ifnum\thedsrbytenumber>\@longestrecord\relax
+			\global\edef\@longestrecord{\thedsrbytenumber}
+		\fi
+	\end{scope}
+	\stepcounter{dsfrecordnumber}
+	\stepcounter{dsfrecordnumberinblock}
+}
+
+\ExplSyntaxOn
+% dsfilenamedhelper: auxiliary to loop through a list of records
+%	#1: record name (see \dsnewnamedrecord)
+%	#2: a comma-separated list of records (fields contents/options)
+\NewDocumentCommand{\dsfilenamedhelper}{mm}{
+	\clist_map_inline:nn {#2} { \ds@file@drawnamedrecord {#1} {##1} }
+}
+
+\NewDocumentCommand{\ds@file@drawnamedrecordexpand} {mm} {
+	\exp_args:Noo \ds@file@drawnamedrecord { #1 } { #2 }
+}
+\ExplSyntaxOff
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Interface
+
+% dsfilerecords: draws a list of records
+\NewExpandableDocumentCommand{\dsfilerecords} {mm} {
+	\dsfilenamedhelper{#1}{#2}
+}
+
+\NewDocumentCommand{\dsfilenamedrecord} {smm} {
+	\IfBooleanTF{#1}{
+		\ds@file@drawnamedrecordexpand{#2}{#3} % fully expand arguments
+	}{
+		\ds@file@drawnamedrecord{#2}{#3} % regular tokens
 	}
-}}
+}
+
+\NewDocumentEnvironment{dsfile}{O{}}{
+	\begingroup
+	
+	% initializations and defaults
+	\setcounter{dsfrecordnumber}{0}
+	\setcounter{dsfbytenumber}{0}
+	\setcounter{dsfblocknumber}{0}
+	
+	\tikzset{control bytes/.append style = {fill = none}}
+	\dsfileset{record height = 1.5em}
+	\dsrecordset{compact field height = \ds@file@recordheight}
+	\def\fieldfillbyte{}
+	
+	% code
+	\dsfileset{#1}
+	\begin{scope}
+	\dstikzset{%
+		start chain = \ds@file@chainname{} going below,
+		node distance = 0.1em,
+	}
+	\ds@file@firstblockinfiletrue
+	\def\@longestrecord{0}
+}{
+	\begingroup % to frame or not to frame
+	\ifds@file@showframe
+		\tikzset{file/.append style = {draw}}
+	\fi
+	\node[file] (\ds@file@chainname) {};
+	\endgroup
+	\end{scope}
+	\endgroup
+}
+
+\NewDocumentEnvironment{dsblock} {m} {
+	\ifds@file@firstblockinfile
+		\global\ds@file@firstblockinfilefalse
+	\else
+		% give some space between blocks
+		\node[on chain,
+			text height = \dimexpr 2pt + 0.2em \relax, % height of the node
+			outer sep = -0.8pt, % reduce the node to 0pt
+			inner sep = 0pt] {};
+	\fi
+	\edef\@firstrecordinblock{\thedsfrecordnumber}
+	\setcounter{dsfrecordnumberinblock}{0}
+}{
+	\pgfmathsetmacro\@remain{%
+		int(\ds@file@recordsinblock - \thedsfrecordnumberinblock)}
+%	\dsnewnamedrecord{__empty_record}{\dsfieldfixed*{\@longestrecord}}
+	\@whilenum\thedsfrecordnumberinblock<\ds@file@recordsinblock\relax\do{
+		\dsfilenamedrecord{#1}{~,~,~,~,~,~,~,~,~,~,~,~}%/hide field frame}
+	}
+	\pgfmathsetmacro\@lastrecordinblock{int(\thedsfrecordnumber - 1)}
+	\node[block] (block) {};
+	\node[below right, font = \itshape, scale = 0.75]
+		at (block.north east)
+		{bloco $\thedsfblocknumber$};
+	\stepcounter{dsfblocknumber}
+}
+
+
+
+\NewDocumentCommand{\dsfileskip} { O{1}m } {
+%	\node...
+}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -375,7 +246,9 @@
 
 % dsfileset: shortcut to file-related pgfkeys
 \newcommand{\dsfileset}[1]{
-	\pgfkeys{/drawdc/file/.cd, #1}
+	\def\keysmacro{/dsdraw/file/.cd, #1}
+	\edef\ekeysmacro{\keysmacro}%
+	\pgfkeysalsofrom{\ekeysmacro}%
 }
 
 %% EOF
