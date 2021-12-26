@@ -43,6 +43,12 @@
 	tikz/.code = {\dstikzset{#1}},
 }
 
+pgfkeys = {
+	/dsdraw/field/.cd,
+	%
+	terminator/.code = {\def\ds@record@fieldterminator{{#1}}},
+}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Colors
@@ -56,8 +62,8 @@
 % Variables
 %
 
-\def\fieldterminator{{\dsbyte{00}}}  % ends a field
-\def\recordterminator{\dsbyte{01}}  % ends a record
+
+\def\ds@record@recordterminator{\dsbyte{01}}  % ends a record
 \def\fieldfillbyte{\dsbyte{FF}}  % unused bytes in a field
 \def\recordfillbyte{\dsbyte{FE}}  % unused bytes in a record
 \def\nulladdress{0xFFFF}  % NULL address
@@ -88,6 +94,11 @@
 	show field frame,
 	length = 0,
 	next = hide, % prevents showing the field 'next'
+}
+
+\pgfkeys{
+	/dsdraw/field/.cd,
+	terminator = {\dsbyte{00}},
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -413,7 +424,7 @@
 			\dsrecordset{hide field frame}
 			\ds@bytehorizontalfalse
 			\begin{scope}[on background layer]
-				\ds@record@drawbyte*{\recordterminator};
+				\ds@record@drawbyte*{\ds@record@recordterminator};
 			\end{scope}
 			\pgfmathparse{int(\thedsrbytenumber - 1)}
 			\pgfnodealias{\ds@record@chainname-terminator}
@@ -516,7 +527,7 @@
 	\xdef\ds@firstfieldbyte{\ds@record@chainname-byte-\thedsrbytenumber}
 }
 
-\NewDocumentCommand{\dsfieldterminator}{smO{\fieldterminator}}{%
+\NewDocumentCommand{\dsfieldterminator}{smO{\ds@record@fieldterminator}}{%
 	% #1: star (*)?
 	% #2: contents
 	% #3: terminator
