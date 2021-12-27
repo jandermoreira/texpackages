@@ -113,7 +113,7 @@
 		#1,
 	}
 	\xdef\ds@file@currentrecordname{\ds@record@chainname} % hack!
-	\dsnamedrecord*[#1]{#2}{#3}
+	\dsnamedrecord[#1]{#2}{#3}
 	\endgroup
 }
 
@@ -207,14 +207,22 @@
 	\setcounter{dsfblocknumber}{0}
 	
 	\dsfileset{record height = 1.5em}
-	\dsrecordset{compact field height = \ds@file@recordheight}	
+	\dsrecordset{%
+		hide record frame,
+		compact field height = \ds@file@recordheight,
+	}	
 	
 	% code
 	\dsfileset{#1}
+	\ifds@record@recordframe
+		\def\@dist{0.3em}
+	\else
+		\def\@dist{0.1em}
+	\fi
 	\begin{scope}
 	\dstikzset{%
 		start chain = \ds@file@chainname{} going below,
-		node distance = 0.1em,
+		node distance = \@dist,
 	}
 	\ds@file@firstblockinfiletrue
 	\def\@longestrecord{0}

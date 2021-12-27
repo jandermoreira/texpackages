@@ -506,9 +506,7 @@
 	\begin{scope}[on background layer]
 		\ifds@record@recordframe
 			\tikzset{frame/.style = {draw, inner sep = 0.1em}}
-			\node at (1,1) {Y};
 		\else
-			\node at (1,1) {N};
 			\tikzset{frame/.style = {inner sep = 0pt}}
 		\fi
 		\node[fit = {
