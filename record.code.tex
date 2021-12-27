@@ -41,6 +41,9 @@
 	latin/.is if = ds@record@uselatin,
 	%
 	tikz/.code = {\dstikzset{#1}},
+	%
+	field options/.code = {\dsfieldset{#1}},
+	tikz options/.code = {\dstikzset{#1}},
 }
 
 \pgfkeys{
@@ -48,6 +51,8 @@
 	%
 	terminator byte/.store in = \ds@record@fieldterminator,
 	fill byte/.store in = \ds@record@fieldfill,
+	%
+	tikz options/.code = {\dstikzset{#1}},
 }
 
 
@@ -98,7 +103,7 @@
 \def\ds@record@firstbyteoffset{0}
 \def\ds@record@bytelength{1.2ex}
 \def\ds@record@lengthscale{1}
-\dsrecordset{
+\dsrecordset{%
 	field font color = .,
 	field height = 1.8em,
 	compact field height = 1.4em,
@@ -109,7 +114,7 @@
 	next = hide, % prevents showing the field 'next'
 }
 
-\dsfieldset{
+\dsfieldset{%
 	terminator byte = {\dsbyte{00}},
 	fill byte = {\dsbyte{FF}}
 }

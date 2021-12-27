@@ -23,8 +23,9 @@
 	%
 	records/.store in = \ds@file@recordsinblock,
 	%
-	record/.code = {\dsrecordset{#1}},
-	tikz/.code = {\dstikzset{#1}},
+	record options/.code = {\dsrecordset{#1}},
+	field options/.code = {\dsfieldset{#1}},
+	tikz options/.code = {\dstikzset{#1}},
 }
 
 
@@ -42,11 +43,22 @@
 \newif\ifds@file@showoffsets
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Utilities
+%
+
+% dsfileset: shortcut to file-related pgfkeys
+\newcommand{\dsfileset}[1]{
+%	\def\keysmacro{/dsdraw/file/.cd, #1}
+%	\edef\ekeysmacro{\keysmacro}%
+%	\pgfkeysalsofrom{\ekeysmacro}%
+	\pgfkeys{/dsdraw/file/.cd, #1}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Defaults
 %
 
-\pgfkeys{
-	/dsdraw/file/.cd,
+\dsfileset{%
 	name = file,
 	hide frame,
 	records = 0, % i.e., any
@@ -175,16 +187,27 @@
 
 \NewDocumentEnvironment{dsfile}{O{}}{
 	\begingroup
+	\dsfieldset{%
+		terminator byte = {},
+		fill byte = {.}
+	}
+	\tikzset{control bytes/.append style = {fill = none}}
+	\begin{dsfile*}
+}{
+	\end{dsfile*}
+	\endgroup
+}
+
+\NewDocumentEnvironment{dsfile*}{O{}}{
+	\begingroup
 	
 	% initializations and defaults
 	\setcounter{dsfrecordnumber}{0}
 	\setcounter{dsfbytenumber}{0}
 	\setcounter{dsfblocknumber}{0}
 	
-	\tikzset{control bytes/.append style = {fill = none}}
 	\dsfileset{record height = 1.5em}
-	\dsrecordset{compact field height = \ds@file@recordheight}
-	\def\fieldfillbyte{}
+	\dsrecordset{compact field height = \ds@file@recordheight}	
 	
 	% code
 	\dsfileset{#1}
@@ -223,7 +246,7 @@
 		int(\ds@file@recordsinblock - \thedsfrecordnumberinblock)}
 %	\dsnewnamedrecord{__empty_record}{\dsfieldfixed*{\@longestrecord}}
 	\@whilenum\thedsfrecordnumberinblock<\ds@file@recordsinblock\relax\do{
-		\dsfilenamedrecord{#1}{~,~,~,~,~,~,~,~,~,~,~,~}%/hide field frame}
+		\dsfilenamedrecord{#1}{{},{},{},{},{},{},{},{},{},{},{},{}}
 	}
 	\pgfmathsetmacro\@lastrecordinblock{int(\thedsfrecordnumber - 1)}
 	\node[block] (block) {};
@@ -239,16 +262,5 @@
 %	\node...
 }
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Utilities
-%
-
-% dsfileset: shortcut to file-related pgfkeys
-\newcommand{\dsfileset}[1]{
-	\def\keysmacro{/dsdraw/file/.cd, #1}
-	\edef\ekeysmacro{\keysmacro}%
-	\pgfkeysalsofrom{\ekeysmacro}%
-}
 
 %% EOF
