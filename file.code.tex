@@ -189,10 +189,10 @@
 	\begingroup
 	\dsfieldset{%
 		terminator byte = {},
-		fill byte = {.}
+		fill byte = {},
 	}
 	\tikzset{control bytes/.append style = {fill = none}}
-	\begin{dsfile*}
+	\begin{dsfile*}[#1]
 }{
 	\end{dsfile*}
 	\endgroup
