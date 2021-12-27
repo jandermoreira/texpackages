@@ -23,7 +23,7 @@
 	hide record frame/.code = {\ds@record@recordframefalse},
 	show record frame/.code = {\ds@record@recordframetrue},
 	%
-	field frame color/.store in = \@ds@record@recordfieldcolor,
+	field frame color/.store in = \ds@record@recordfieldcolor,
 	hide field frame/.code = {\ds@record@fieldframefalse},
 	show field frame/.code = {\ds@record@fieldframetrue},
 	byte length/.store in = \ds@record@bytelength,
@@ -43,10 +43,26 @@
 	tikz/.code = {\dstikzset{#1}},
 }
 
-pgfkeys = {
+\pgfkeys{
 	/dsdraw/field/.cd,
 	%
-	terminator/.code = {\def\ds@record@fieldterminator{{#1}}},
+	terminator byte/.store in = \ds@record@fieldterminator,
+	fill byte/.store in = \ds@record@fieldfill,
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Utilities
+%
+
+% dsrecordset: shortcut to set record-related pgfkeys
+\newcommand{\dsrecordset}[1]{%
+	\pgfkeys{/dsdraw/record/.cd, #1}%
+}
+
+% dsrecordset: shortcut to set record-related pgfkeys
+\newcommand{\dsfieldset}[1]{%
+	\pgfkeys{/dsdraw/field/.cd, #1}%
 }
 
 
@@ -62,9 +78,7 @@ pgfkeys = {
 % Variables
 %
 
-
 \def\ds@record@recordterminator{\dsbyte{01}}  % ends a record
-\def\fieldfillbyte{\dsbyte{FF}}  % unused bytes in a field
 \def\recordfillbyte{\dsbyte{FE}}  % unused bytes in a record
 \def\nulladdress{0xFFFF}  % NULL address
 
@@ -84,8 +98,7 @@ pgfkeys = {
 \def\ds@record@firstbyteoffset{0}
 \def\ds@record@bytelength{1.2ex}
 \def\ds@record@lengthscale{1}
-\pgfkeys{
-	/dsdraw/record/.cd,
+\dsrecordset{
 	field font color = .,
 	field height = 1.8em,
 	compact field height = 1.4em,
@@ -96,9 +109,9 @@ pgfkeys = {
 	next = hide, % prevents showing the field 'next'
 }
 
-\pgfkeys{
-	/dsdraw/field/.cd,
-	terminator = {\dsbyte{00}},
+\dsfieldset{
+	terminator byte = {\dsbyte{00}},
+	fill byte = {\dsbyte{FF}}
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -586,7 +599,7 @@ pgfkeys = {
 		\ds@bytehorizontalfalse
 	}
 	\IfNoValueTF{#4}{
-		\def\@fill{\fieldfillbyte}
+		\def\@fill{\ds@record@fieldfill}
 	}{
 		\def\@fill{#4}
 	}
@@ -764,14 +777,5 @@ pgfkeys = {
 	\group_end:
 }
 \ExplSyntaxOff
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Utilities
-%
-
-% dsrecordset: shortcut to set record-related pgfkeys
-\newcommand{\dsrecordset}[1]{%
-	\pgfkeys{/dsdraw/record/.cd, #1}%
-}
 
 %% EOF
