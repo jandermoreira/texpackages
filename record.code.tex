@@ -659,7 +659,6 @@
 				draw = none,
 			] (\@currentnode) {};
 			\pgfnodealias{\ds@record@chainname-\rlabel}{\@currentnode}
-			\pgfnodealias{last field}{\@currentnode}
 			
 			% frame
 			\draw (\@currentnode.south west) -- (\@currentnode.north west);
@@ -731,6 +730,7 @@
 			\fi
 		\fi 
 		
+		\pgfnodealias{last field}{\@currentnode}
 		\addtocounter{dsrrecordoffset}{1}
 	}
 %	\endgroup % chain
