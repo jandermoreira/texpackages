@@ -154,11 +154,14 @@
 	\stepcounter{dsfrecordnumberinblock}
 }
 
+\NewDocumentCommand{\ds@file@filestructurehelper} {m} {
+}
+
 \ExplSyntaxOn
-% dsfilenamedhelper: auxiliary to loop through a list of records
+% ds@file@namedhelper: auxiliary to loop through a list of records
 %	#1: record name (see \dsnewnamedrecord)
 %	#2: a comma-separated list of records (fields contents/options)
-\NewDocumentCommand{\dsfilenamedhelper}{mm}{
+\NewDocumentCommand{\ds@file@namedhelper}{mm}{
 	\clist_map_inline:nn {#2} { \ds@file@drawnamedrecord {#1} {##1} }
 }
 
@@ -166,9 +169,11 @@
 	\exp_args:Noo \ds@file@drawnamedrecord { #1 } { #2 }
 }
 
-
+% ds@file@filestructurehelper: auxiliary to loop through a list of
+%	records and sizes
+%	#1: comma-separated list of pairs record-lable/size-in-bytes
 \NewDocumentCommand{\ds@file@filestructurehelper} {m} {
-
+	\clist_map_function:nN {#1} \ds@file@drawrecord
 }
 \ExplSyntaxOff
 
@@ -179,7 +184,7 @@
 
 % dsfilerecords: draws a list of records
 \NewExpandableDocumentCommand{\dsfilerecords} {mm} {
-	\dsfilenamedhelper{#1}{#2}
+	\ds@file@namedhelper{#1}{#2}
 }
 
 \NewDocumentCommand{\dsfilenamedrecord} {smm} {

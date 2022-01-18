@@ -636,7 +636,6 @@
 		/dsdraw/record/.cd,
 		#1
 	}
-%	\begingroup % for chain
 	\dstikzset{%
 		start chain = {\ds@record@chainname} going right,
 		node distance = 0pt,
@@ -671,7 +670,7 @@
 				-- ($(\@currentnode.north) + (0, \@ydist)$)
 
 				($(\@currentnode.north) + (0, -\@ydist)$)
-				-- ($(\@currentnode.north) + (4 *\@xdist, \@ydist)$)
+				-- ($(\@currentnode.north) + (4 * \@xdist, \@ydist)$)
 				
 				($(\@currentnode.north) + (2 * \@xdist, 0)$)
 				-- (\@currentnode.north east);
@@ -733,7 +732,6 @@
 		\pgfnodealias{last field}{\@currentnode}
 		\addtocounter{dsrrecordoffset}{1}
 	}
-%	\endgroup % chain
 	\node[inner sep = 0pt,
 		fit = {
 			(\ds@record@chainname-field-0.north west)
