@@ -165,6 +165,11 @@
 \NewDocumentCommand{\ds@file@drawnamedrecordexpand} {mm} {
 	\exp_args:Noo \ds@file@drawnamedrecord { #1 } { #2 }
 }
+
+
+\NewDocumentCommand{\ds@file@filestructurehelper} {m} {
+
+}
 \ExplSyntaxOff
 
 
@@ -264,6 +269,16 @@
 	\stepcounter{dsfblocknumber}
 }
 
+
+% dsfilestructure: file with records and block boundaries (horizontal)
+%	#1: Options (optional)
+%	#2: comma-separated list of records and sizes
+\NewDocumentCommand{\dsfilestructure} { O{}m } {
+	\begingroup
+	\dsfileset{#1}
+	\ds@file@filestructurehelper{#2}
+	\endgroup
+}
 
 
 \NewDocumentCommand{\dsfileskip} { O{1}m } {
