@@ -193,7 +193,8 @@
 \NewDocumentCommand{\ds@file@drawstructurerecord} {mm} {
 	\pgfmathparse{\ds@file@kbytewidth/\ds@file@blocksize * #2 - 0.1em}
 	\edef\@nodewidth{\pgfmathresult pt}
-	\node[file record h, text width = \@nodewidth] (r) {#1};
+	\node[file record h, text width = \@nodewidth]
+		(\ds@file@chainname-record-\thedsfrecordnumber) {#1};
 	\addtocounter{dsfbytenumber}{#2}
 }
 
@@ -338,6 +339,7 @@
 	\dsfileset{#1}
 	\def\@dist{0.1em}
 	\setcounter{dsfbytenumber}{0}
+	\setcounter{dsfrecordnumber}{0}
 	\begin{scope}
 		\dstikzset{%
 			start chain = \ds@file@chainname{} going right,
