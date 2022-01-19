@@ -108,7 +108,7 @@
 		align = center,
 		inner sep = 0em,
 		outer sep = 0em,
-		anchor = north west,
+		anchor = west,
 		on chain,
 	},
 }
@@ -190,12 +190,24 @@
 \NewDocumentCommand{\ds@file@drawstructurerecord} {mm} {
 	\pgfmathparse{\ds@file@kbytewidth/1024 * #2 - 0.1em}
 	\edef\@nodewidth{\pgfmathresult pt}
-	\node[file record h, text width = \@nodewidth] {#1};
+	\node[file record h, text width = \@nodewidth] (r) {#1};
 	\addtocounter{dsfbytenumber}{#2}
 }
 
 \NewDocumentCommand{\ds@file@drawstructureblocks} {} {
-	\pgfmathsetmacro\@numberofblocks{\thedsfbytenumber / 1024}
+	\pgfmathsetmacro\@remainingbytes{int(mod(\thedsfbytenumber, 1024))}
+	\ifnum\@remainingbytes=0\relax
+		\pgfmathsetmacro\@lastblock{int(\thedsfbytenumber / 1024)}
+	\else
+		\pgfmathsetmacro\@lastblock{int(\thedsfbytenumber / 1024) + 1}
+	\fi
+	\node at (1,1) {\@remainingbytes, \@lastblock};
+	\foreach \n in {0, ..., \@lastblock}{
+		\draw [draw = red, xshift = -0.1em]
+			(\n * \ds@file@kbytewidth, 1em)
+			rectangle
+			(\n * \ds@file@kbytewidth + \ds@file@kbytewidth, -1em);
+	}
 }
 
 \ExplSyntaxOn
