@@ -22,6 +22,8 @@
 	hide offsets/.code = {\ds@file@showoffsetsfalse},
 	%
 	kbyte width/.store in = \ds@file@kbytewidth,
+	block size/.store in = \ds@file@blocksize,
+	block size = 1024,
 	%
 	records/.store in = \ds@file@recordsinblock,
 	%
@@ -103,6 +105,7 @@
 	},
 	file record h/.style = {
 		draw,
+		fill = white,
 		text height = \ds@file@recordheight,
 		text depth = \dimexpr \ds@file@recordheight/3,
 		align = center,
@@ -188,26 +191,27 @@
 %	#1: record label
 %	#2: record length in bytes
 \NewDocumentCommand{\ds@file@drawstructurerecord} {mm} {
-	\pgfmathparse{\ds@file@kbytewidth/1024 * #2 - 0.1em}
+	\pgfmathparse{\ds@file@kbytewidth/\ds@file@blocksize * #2 - 0.1em}
 	\edef\@nodewidth{\pgfmathresult pt}
 	\node[file record h, text width = \@nodewidth] (r) {#1};
 	\addtocounter{dsfbytenumber}{#2}
 }
 
 \NewDocumentCommand{\ds@file@drawstructureblocks} {} {
-	\pgfmathsetmacro\@remainingbytes{int(mod(\thedsfbytenumber, 1024))}
+	\pgfmathsetmacro\@remainingbytes{int(mod(\thedsfbytenumber, \ds@file@blocksize))}
 	\ifnum\@remainingbytes=0\relax
-		\pgfmathsetmacro\@lastblock{int(\thedsfbytenumber / 1024) - 1}
+		\pgfmathsetmacro\@lastblock{int(\thedsfbytenumber / \ds@file@blocksize) - 1}
 	\else
-		\pgfmathsetmacro\@lastblock{int(\thedsfbytenumber / 1024)}
+		\pgfmathsetmacro\@lastblock{int(\thedsfbytenumber / \ds@file@blocksize)}
 	\fi
-	\node at (1,1) {\@remainingbytes, \@lastblock};
-	\foreach \n in {0, ..., \@lastblock}{
-		\draw [draw = red, xshift = -0.05em]
-			(\n * \ds@file@kbytewidth, 1em)
-			rectangle
-			(\n * \ds@file@kbytewidth + \ds@file@kbytewidth, -1em);
-	}
+	\begin{scope}[on background layer]
+		\foreach \n in {0, ..., \@lastblock}{
+			\draw [draw, xshift = -0.05em]
+				(\n * \ds@file@kbytewidth, 1em)
+				rectangle
+				(\n * \ds@file@kbytewidth + \ds@file@kbytewidth, -1em);
+		}
+	\end{scope}
 }
 
 \ExplSyntaxOn
