@@ -23,7 +23,7 @@
 	%
 	kbyte width/.code = {
 		\pgfmathparse{#1/1024}
-		\edef\ds@file@bytewidth{\pgfmathresult pt}
+		\edef\ds@file@kbytewidth{\pgfmathresult pt}
 	},
 	%
 	records/.store in = \ds@file@recordsinblock,
@@ -191,10 +191,9 @@
 %	#1: record label
 %	#2: record length in bytes
 \NewDocumentCommand{\ds@file@drawstructurerecord} {mm} {
-%	\pgfmathparse{#2 * \ds@file@kbytewidth}
-%	\def\@nodewidth{\pgfmathresult pt}
-%	\node[file record h, text width = \@nodewidth] {#1};
-	\node[file record h] {(#1)(#2)};
+	\pgfmathparse{\ds@file@kbytewidth * #2}
+	\edef\@nodewidth{\pgfmathresult pt}
+	\node[file record h, text width = \@nodewidth] {#1};
 }
 
 \ExplSyntaxOn
@@ -202,13 +201,15 @@
 %	records and sizes
 %	#1: comma-separated list of pairs record-label/size-in-bytes
 \NewDocumentCommand{\ds@file@filestructurehelper} {m} {
-%	\clist_map_inline:nN {#1} {
-%		% get label and size
-%		\seq_set_split:Nnn \l_record_seq { / } { ##1 }
-%		\tl_set:Nn \l_label_tl { \seq_item:Nn \l_record_seq { 1 } }
-%		\tl_set:Nn \l_size_tl { \seq_item:Nn \l_record_seq { 2 } }
-%		\ds@file@drawstructurerecord { \l_label_tl } { \l_size_tl }
-%	}
+	\clist_map_inline:nn {#1} {
+		% get label and size
+		\seq_set_split:Nnn \l_record_seq { / } { ##1 }
+		\tl_set:Nn \l_label_tl { \seq_item:Nn \l_record_seq { 1 } }
+		\tl_set:Nn \l_size_tl { \seq_item:Nn \l_record_seq { 2 } }
+		
+		% draw
+		\ds@file@drawstructurerecord { \l_label_tl } { \l_size_tl }
+	}
 }
 \ExplSyntaxOff
 
@@ -316,10 +317,11 @@
 \NewDocumentCommand{\dsfilestructure} { O{}m } {
 	\begingroup
 	\dsfileset{#1}
+	\def\@dist{0.2em}
 	\begin{scope}
 		\dstikzset{%
 			start chain = \ds@file@chainname{} going right,
-%			node distance = \@dist,
+			node distance = \@dist,
 		}
 		\ds@file@filestructurehelper{#2}
 	\end{scope}
