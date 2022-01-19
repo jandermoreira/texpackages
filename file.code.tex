@@ -89,11 +89,18 @@
 			(\ds@file@chainname-record-\@lastrecordinblock.south east)
 		},
 	},
-	file record/.style = {
+	file record v/.style = {
 %		draw = yellow, dashed, very thick, text width = 2em,
 		minimum height = \ds@file@recordheight,
 		inner sep = 0pt,
 		outer sep = 0pt,
+		anchor = north west,
+		on chain,
+	},
+	file record h/.style = {
+		minimum height = \ds@file@recordheight,
+		inner sep = 0.1em,
+		outer sep = 0.1em,
 		anchor = north west,
 		on chain,
 	},
@@ -137,7 +144,7 @@
 %		of comma-separated list of record options
 \NewDocumentCommand{\ds@file@drawnamedrecord} {mm} {
 	\edef\@currentrecord{\ds@file@chainname-record-\thedsfrecordnumber}
-	\node[file record] (\@currentrecord) {}; % reference node
+	\node[file record v] (\@currentrecord) {}; % reference node
 	\begin{scope}[shift = (\@currentrecord.north west)]
 		\ds@file@drawrecordhelper{#1}{#2}
 		\ifds@file@showoffsets
@@ -154,7 +161,10 @@
 	\stepcounter{dsfrecordnumberinblock}
 }
 
-\NewDocumentCommand{\ds@file@filestructurehelper} {m} {
+% \ds@file@drawrecord: draw a single record in a structure file
+%	#1: 
+\NewDocumentCommand{\ds@file@drawrecord} {m} {
+	\node[file record h] {#1};
 }
 
 \ExplSyntaxOn
@@ -281,7 +291,13 @@
 \NewDocumentCommand{\dsfilestructure} { O{}m } {
 	\begingroup
 	\dsfileset{#1}
-	\ds@file@filestructurehelper{#2}
+	\begin{scope}
+		\dstikzset{%
+			start chain = \ds@file@chainname{} going right,
+			node distance = \@dist,
+		}
+		\ds@file@filestructurehelper{#2}
+	\end{scope}
 	\endgroup
 }
 
