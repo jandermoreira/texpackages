@@ -21,10 +21,7 @@
 	show offsets/.is if = ds@file@showoffsets,
 	hide offsets/.code = {\ds@file@showoffsetsfalse},
 	%
-	kbyte width/.code = {
-		\pgfmathparse{#1/1024}
-		\edef\ds@file@kbytewidth{\pgfmathresult pt}
-	},
+	kbyte width/.store in = \ds@file@kbytewidth,
 	%
 	records/.store in = \ds@file@recordsinblock,
 	%
@@ -191,9 +188,14 @@
 %	#1: record label
 %	#2: record length in bytes
 \NewDocumentCommand{\ds@file@drawstructurerecord} {mm} {
-	\pgfmathparse{\ds@file@kbytewidth * #2}
+	\pgfmathparse{\ds@file@kbytewidth/1024 * #2 - 0.1em}
 	\edef\@nodewidth{\pgfmathresult pt}
 	\node[file record h, text width = \@nodewidth] {#1};
+	\addtocounter{dsfbytenumber}{#2}
+}
+
+\NewDocumentCommand{\ds@file@drawstructureblocks} {} {
+	\pgfmathsetmacro\@numberofblocks{\thedsfbytenumber / 1024}
 }
 
 \ExplSyntaxOn
@@ -210,6 +212,7 @@
 		% draw
 		\ds@file@drawstructurerecord { \l_label_tl } { \l_size_tl }
 	}
+	\ds@file@drawstructureblocks
 }
 \ExplSyntaxOff
 
@@ -317,7 +320,8 @@
 \NewDocumentCommand{\dsfilestructure} { O{}m } {
 	\begingroup
 	\dsfileset{#1}
-	\def\@dist{0.2em}
+	\def\@dist{0.1em}
+	\setcounter{dsfbytenumber}{0}
 	\begin{scope}
 		\dstikzset{%
 			start chain = \ds@file@chainname{} going right,
