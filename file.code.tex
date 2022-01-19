@@ -197,13 +197,13 @@
 \NewDocumentCommand{\ds@file@drawstructureblocks} {} {
 	\pgfmathsetmacro\@remainingbytes{int(mod(\thedsfbytenumber, 1024))}
 	\ifnum\@remainingbytes=0\relax
-		\pgfmathsetmacro\@lastblock{int(\thedsfbytenumber / 1024)}
+		\pgfmathsetmacro\@lastblock{int(\thedsfbytenumber / 1024) - 1}
 	\else
-		\pgfmathsetmacro\@lastblock{int(\thedsfbytenumber / 1024) + 1}
+		\pgfmathsetmacro\@lastblock{int(\thedsfbytenumber / 1024)}
 	\fi
 	\node at (1,1) {\@remainingbytes, \@lastblock};
 	\foreach \n in {0, ..., \@lastblock}{
-		\draw [draw = red, xshift = -0.1em]
+		\draw [draw = red, xshift = -0.05em]
 			(\n * \ds@file@kbytewidth, 1em)
 			rectangle
 			(\n * \ds@file@kbytewidth + \ds@file@kbytewidth, -1em);
