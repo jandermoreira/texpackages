@@ -218,7 +218,7 @@
 		at (\@currentnode.south west) {\thedsfbytenumber};
 	\pgfmathparse{int(\thedsfbytenumber + #2 - 1)}
 	\node[file offset, anchor = north east]
-		at (\@currentnode.south east) {\pgfmathresult};
+		at (\@currentnode.south east) (file offset) {\pgfmathresult};
 	\addtocounter{dsfbytenumber}{#2}
 }
 
@@ -231,7 +231,12 @@
 	\fi
 	\begin{scope}[on background layer]
 		\foreach \n in {0, ..., \@lastblock}{
-			\draw [draw, xshift = -0.05em]
+			\path let
+				\p{record} = (\ds@file@chainname-record-0.north),
+				\p{offset} = (file offset.south)
+				[draw] (\n * \ds@file@kbytewidth, \y{record}) -- (1,1)
+			;
+			\draw [draw = yellow, xshift = -0.05em]
 				(\n * \ds@file@kbytewidth, 1em)
 				rectangle
 				(\n * \ds@file@kbytewidth + \ds@file@kbytewidth, -1em);
