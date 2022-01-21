@@ -97,7 +97,7 @@
 	},
 	file offset/.style = {
 		transform shape,
-		scale = 0.3,
+		scale = 0.4,
 		text depth = 0.25ex,
 		inner sep = 1ex,
 		outer sep = 0pt,
@@ -231,19 +231,23 @@
 		\pgfmathsetmacro\@lastblock{int(\thedsfbytenumber / \ds@file@blocksize)}
 	\fi
 	\begin{scope}[on background layer]
-		\foreach \n in {0, ..., \@lastblock}{
-			\draw
+		\foreach \block in {0, ..., \@lastblock}{
+			\path
 				let
-					\p0 = (\ds@file@chainname-record-0.north),
-					\p1 = (file offset.south)
+					\p{record} = (\ds@file@chainname-record-0.north),
+					\p{offset} = (file offset.south)
 				in
-					(\n * \ds@file@kbytewidth, \y0)
-					rectangle
-					(\n * \ds@file@kbytewidth + \ds@file@kbytewidth, \y1);
-			\draw [draw = yellow, xshift = -0.05em]
-				(\n * \ds@file@kbytewidth, 1em)
-				rectangle
-				(\n * \ds@file@kbytewidth + \ds@file@kbytewidth, -1em);
+					node[
+%					fit = {
+%						(\block * \ds@file@kbytewidth, \y{record} + 0.3em)
+%						(\block * \ds@file@kbytewidth +
+%							\ds@file@kbytewidth, \y{offset})
+%						}
+						] {A};
+%			\draw [draw = yellow, xshift = -0.05em]
+%				(\block * \ds@file@kbytewidth, 1em)
+%				rectangle
+%				(\block * \ds@file@kbytewidth + \ds@file@kbytewidth, -1em);
 		}
 	\end{scope}
 }
