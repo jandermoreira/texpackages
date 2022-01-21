@@ -97,7 +97,7 @@
 	},
 	file offset/.style = {
 		transform shape,
-		scale = 0.4,
+		scale = 0.3,
 		text depth = 0.25ex,
 		inner sep = 1ex,
 		outer sep = 0pt,
@@ -216,8 +216,9 @@
 	% draw offsets
 	\node[file offset, anchor = north west]
 		at (\@currentnode.south west) {\thedsfbytenumber};
+	\pgfmathparse{int(\thedsfbytenumber + #2 - 1)}
 	\node[file offset, anchor = north east]
-		at (\@currentnode.south west) {\thedsfbytenumber};
+		at (\@currentnode.south east) {\pgfmathresult};
 	\addtocounter{dsfbytenumber}{#2}
 }
 
