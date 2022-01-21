@@ -178,7 +178,7 @@
 		on chain,
 		record text,
 	},
-	number/.style = {
+	record offset/.style = {
 		transform shape,
 		scale = 0.4,
 		text depth = 0.25ex,
@@ -710,7 +710,7 @@
 		% render offset
 		\ifds@record@showstructureoffset
 			\ifnum\rlen=1\relax
-				\node[number, anchor = north]
+				\node[record offset, anchor = north]
 					at (\@currentnode.south) {\thedsrrecordoffset};
 			\else
 				\edef\@first{\thedsrrecordoffset}
@@ -718,12 +718,12 @@
 				\addtocounter{dsrrecordoffset}{\rlen}
 				\edef\@second{\thedsrrecordoffset}
 				\ifnum\rlen=2\relax
-					\node[number, anchor = north]
+					\node[record offset, anchor = north]
 							at (\@currentnode.south) {\@first$-$\@second};
 				\else
-					\node[number, anchor = north west]
+					\node[record offset, anchor = north west]
 						at (\@currentnode.south west) {\@first};
-					\node[number, anchor = north east]
+					\node[record offset, anchor = north east]
 						at (\@currentnode.south east) {\@second};
 				\fi
 			\fi

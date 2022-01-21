@@ -95,6 +95,13 @@
 			(\ds@file@chainname-record-\@lastrecordinblock.south east)
 		},
 	},
+	file offset/.style = {
+		transform shape,
+		scale = 0.4,
+		text depth = 0.25ex,
+		inner sep = 1ex,
+		outer sep = 0pt,
+	},
 	file record v/.style = {
 %		draw = yellow, dashed, very thick, text width = 2em,
 		minimum height = \ds@file@recordheight,
@@ -198,10 +205,19 @@
 %	#1: record label
 %	#2: record length in bytes
 \NewDocumentCommand{\ds@file@drawstructurerecord} {mm} {
+	\edef\@currentnode{\ds@file@chainname-record-\thedsfrecordnumber}
 	\pgfmathparse{\ds@file@kbytewidth/\ds@file@blocksize * #2 - 0.1em}
 	\edef\@nodewidth{\pgfmathresult pt}
+	
+	% draw record
 	\node[file record h, text width = \@nodewidth]
-		(\ds@file@chainname-record-\thedsfrecordnumber) {#1};
+		(\@currentnode) {#1};
+	
+	% draw offsets
+	\node[file offset, anchor = north west]
+		at (\@currentnode.south west) {\thedsfbytenumber};
+	\node[file offset, anchor = north east]
+		at (\@currentnode.south west) {\thedsfbytenumber};
 	\addtocounter{dsfbytenumber}{#2}
 }
 
