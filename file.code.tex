@@ -206,6 +206,7 @@
 %	#2: record length in bytes
 \NewDocumentCommand{\ds@file@drawstructurerecord} {mm} {
 	\edef\@currentnode{\ds@file@chainname-record-\thedsfrecordnumber}
+	\stepcounter{dsfrecordnumber}
 	\pgfmathparse{\ds@file@kbytewidth/\ds@file@blocksize * #2 - 0.1em}
 	\edef\@nodewidth{\pgfmathresult pt}
 	
@@ -231,11 +232,14 @@
 	\fi
 	\begin{scope}[on background layer]
 		\foreach \n in {0, ..., \@lastblock}{
-			\path let
-				\p{record} = (\ds@file@chainname-record-0.north),
-				\p{offset} = (file offset.south)
-				[draw] (\n * \ds@file@kbytewidth, \y{record}) -- (1,1)
-			;
+			\draw
+				let
+					\p0 = (\ds@file@chainname-record-0.north),
+					\p1 = (file offset.south)
+				in
+					(\n * \ds@file@kbytewidth, \y0)
+					rectangle
+					(\n * \ds@file@kbytewidth + \ds@file@kbytewidth, \y1);
 			\draw [draw = yellow, xshift = -0.05em]
 				(\n * \ds@file@kbytewidth, 1em)
 				rectangle
