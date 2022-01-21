@@ -185,6 +185,13 @@
 \NewDocumentCommand{\ds@file@drawnamedrecordexpand} {mm} {
 	\exp_args:Noo \ds@file@drawnamedrecord { #1 } { #2 }
 }
+
+% dsfilenamedhelper: auxiliary to loop through a list of records
+%	#1: record name (see \dsnewnamedrecord)
+%	#2: a comma-separated list of records (fields contents/options)
+\NewDocumentCommand{\dsfilenamedhelper}{mm}{
+	\clist_map_inline:nn {#2} { \ds@file@drawnamedrecord {#1} {##1} }
+}
 \ExplSyntaxOff
 
 % ds@file@calldrawrecord: draw a single record
