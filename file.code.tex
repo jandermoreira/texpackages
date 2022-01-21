@@ -232,6 +232,7 @@
 	\fi
 	\begin{scope}[on background layer]
 		\foreach \@block in {0, ..., \@lastblock}{
+			% draw block
 			\path
 				let
 					\p{record} = (\ds@file@chainname-record-0.north),
@@ -246,12 +247,23 @@
 						\y{offset}
 					),
 				in 
-					node [draw = blue,
+					node [draw,
 						fit = {(\p{blocktop}) (\p{blockbottom})},
 						inner sep = 0pt, outer sep = 0pt,
 					] (\ds@file@chainname-block-\@block) {};
+			
+			% draw offsets
+			\pgfmathparse{int(\@block * \ds@file@blocksize)}
+			\node[file offset, anchor = north west]
+				at (\ds@file@chainname-block-\@block.south west)
+				{\pgfmathresult};
+			\pgfmathparse{int((\@block + 1) * \ds@file@blocksize - 1)}
+			\node[file offset, anchor = north east]
+				at (\ds@file@chainname-block-\@block.south east)
+				{\pgfmathresult};
 		}
 	\end{scope}
+	
 }
 
 \ExplSyntaxOn
