@@ -231,23 +231,25 @@
 		\pgfmathsetmacro\@lastblock{int(\thedsfbytenumber / \ds@file@blocksize)}
 	\fi
 	\begin{scope}[on background layer]
-		\foreach \block in {0, ..., \@lastblock}{
+		\foreach \@block in {0, ..., \@lastblock}{
 			\path
 				let
 					\p{record} = (\ds@file@chainname-record-0.north),
-					\p{offset} = (file offset.south)
-				in
-					node[
-%					fit = {
-%						(\block * \ds@file@kbytewidth, \y{record} + 0.3em)
-%						(\block * \ds@file@kbytewidth +
-%							\ds@file@kbytewidth, \y{offset})
-%						}
-						] {A};
-%			\draw [draw = yellow, xshift = -0.05em]
-%				(\block * \ds@file@kbytewidth, 1em)
-%				rectangle
-%				(\block * \ds@file@kbytewidth + \ds@file@kbytewidth, -1em);
+					\p{offset} = (file offset.south),
+					\p{blocktop} = (
+						\@block * \ds@file@kbytewidth - 0.05em,
+						\y{record} + 0.3em
+					),
+					\p{blockbottom} = (
+						\@block * \ds@file@kbytewidth + \ds@file@kbytewidth
+							- 0.05em,
+						\y{offset}
+					),
+				in 
+					node [draw = blue,
+						fit = {(\p{blocktop}) (\p{blockbottom})},
+						inner sep = 0pt, outer sep = 0pt,
+					] (\ds@file@chainname-block-\@block) {};
 		}
 	\end{scope}
 }
