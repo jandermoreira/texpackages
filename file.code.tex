@@ -32,6 +32,12 @@
 	tikz options/.code = {\dstikzset{#1}},
 }
 
+\pgfkeys{
+	/dsdraw/file/structure/.cd,
+	%
+	hide offsets/.is if = ds@file@showstructureoffsets,
+}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Variables
@@ -45,6 +51,7 @@
 \newif\ifds@file@firstblockinfile
 \newif\ifds@file@showframe
 \newif\ifds@file@showoffsets
+\newif\ifds@file@showstructureoffsets
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Utilities
@@ -216,11 +223,16 @@
 		(\@currentnode) {#1};
 	
 	% draw offsets
-	\node[file offset, anchor = north west]
-		at (\@currentnode.south west) {\thedsfbytenumber};
-	\pgfmathparse{int(\thedsfbytenumber + #2 - 1)}
-	\node[file offset, anchor = north east]
-		at (\@currentnode.south east) (file offset) {\pgfmathresult};
+	\ifds@file@showstructureoffsets
+		\node[file offset, anchor = north west]
+			at (\@currentnode.south west) {\thedsfbytenumber};
+		\pgfmathparse{int(\thedsfbytenumber + #2 - 1)}
+		\node[file offset, anchor = north east]
+			at (\@currentnode.south east) (file offset) {\pgfmathresult};
+	\else
+		\node[file offset, anchor = north east] at  (file offset)
+			at (\@currentnode.south east) (file offset) {};
+	\fi
 	\addtocounter{dsfbytenumber}{#2}
 }
 
