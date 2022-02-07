@@ -7,6 +7,21 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Variables
+%
+
+\newcounter{dsfrecordnumber} % current number of records in file
+\newcounter{dsfbytenumber} % current number of bytes in file
+\newcounter{dsfblocknumber} % current block
+\newcounter{dsfrecordnumberinblock} % number of records in block
+
+\newif\ifds@file@firstblockinfile
+\newif\ifds@file@showframe
+\newif\ifds@file@showoffsets
+\newif\ifds@file@showstructurerecordoffsets
+\newif\ifds@file@showstructureblockoffsets
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Options
 %
 
@@ -21,6 +36,26 @@
 	show offsets/.is if = ds@file@showoffsets,
 	hide offsets/.code = {\ds@file@showoffsetsfalse},
 	%
+	structure offsets/.is choice,
+	structure offsets/all/.code = {
+		\ds@file@showstructurerecordoffsetstrue
+		\ds@file@showstructureblockoffsetstrue
+	},
+	structure offsets/record/.code = {
+		\ds@file@showstructurerecordoffsetstrue
+		\ds@file@showstructureblockoffsetsfalse
+},
+	structure offsets/block/.code = {
+		\ds@file@showstructurerecordoffsetsfalse
+		\ds@file@showstructureblockoffsetstrue
+	},
+	structure offsets/none/.code = {
+		\ds@file@showstructurerecordoffsetsfalse
+		\ds@file@showstructureblockoffsetsfalse
+	},
+	structure offsets/.default = all,
+%	structure offsets = all,
+	%
 	kbyte width/.store in = \ds@file@kbytewidth,
 	block size/.store in = \ds@file@blocksize,
 	block size = 1024,
@@ -32,26 +67,7 @@
 	tikz options/.code = {\dstikzset{#1}},
 }
 
-\pgfkeys{
-	/dsdraw/file/structure/.cd,
-	%
-	hide offsets/.is if = ds@file@showstructureoffsets,
-}
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Variables
-%
-
-\newcounter{dsfrecordnumber} % current number of records in file
-\newcounter{dsfbytenumber} % current number of bytes in file
-\newcounter{dsfblocknumber} % current block
-\newcounter{dsfrecordnumberinblock} % number of records in block
-
-\newif\ifds@file@firstblockinfile
-\newif\ifds@file@showframe
-\newif\ifds@file@showoffsets
-\newif\ifds@file@showstructureoffsets
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Utilities
@@ -223,14 +239,14 @@
 		(\@currentnode) {#1};
 	
 	% draw offsets
-	\ifds@file@showstructureoffsets
+	\ifds@file@showstructurerecordoffsets
 		\node[file offset, anchor = north west]
 			at (\@currentnode.south west) {\thedsfbytenumber};
 		\pgfmathparse{int(\thedsfbytenumber + #2 - 1)}
 		\node[file offset, anchor = north east]
 			at (\@currentnode.south east) (file offset) {\pgfmathresult};
 	\else
-		\node[file offset, anchor = north east] at  (file offset)
+		\node[file offset, anchor = north east] 
 			at (\@currentnode.south east) (file offset) {};
 	\fi
 	\addtocounter{dsfbytenumber}{#2}
@@ -266,14 +282,16 @@
 					] (\ds@file@chainname-block-\@block) {};
 			
 			% draw offsets
-			\pgfmathparse{int(\@block * \ds@file@blocksize)}
-			\node[file offset, anchor = north west]
-				at (\ds@file@chainname-block-\@block.south west)
-				{\pgfmathresult};
-			\pgfmathparse{int((\@block + 1) * \ds@file@blocksize - 1)}
-			\node[file offset, anchor = north east]
-				at (\ds@file@chainname-block-\@block.south east)
-				{\pgfmathresult};
+			\ifds@file@showstructureblockoffsets
+				\pgfmathparse{int(\@block * \ds@file@blocksize)}
+				\node[file offset, anchor = north west]
+					at (\ds@file@chainname-block-\@block.south west)
+					{\pgfmathresult};
+				\pgfmathparse{int((\@block + 1) * \ds@file@blocksize - 1)}
+				\node[file offset, anchor = north east]
+					at (\ds@file@chainname-block-\@block.south east)
+					{\pgfmathresult};
+			\fi
 		}
 	\end{scope}
 	
@@ -289,9 +307,13 @@
 		\seq_set_split:Nnn \l_record_seq { / } { ##1 }
 		\tl_set:Nn \l_label_tl { \seq_item:Nn \l_record_seq { 1 } }
 		\tl_set:Nn \l_size_tl { \seq_item:Nn \l_record_seq { 2 } }
+		\tl_set:Nn \l_options_tl { \seq_item:Nn \l_record_seq { 3 } }
 		
 		% draw
+		\group_begin:
+		\exp_args:Ne \dsfileset { \l_options_tl }
 		\ds@file@drawstructurerecord { \l_label_tl } { \l_size_tl }
+		\group_end:
 	}
 	\ds@file@drawstructureblocks
 }
