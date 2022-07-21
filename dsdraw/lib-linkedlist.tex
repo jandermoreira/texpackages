@@ -1,0 +1,28 @@
+%
+
+\subsection{\texttt{linkedlist}}
+Linked lists.
+\usedslibrary{linkedlist}
+
+
+\begin{tcblisting}{}
+\usedslibrary{linkedlist}
+
+\begin{tikzpicture}[]
+	\dsll{my list}{one, two, three, four, null}
+\end{tikzpicture}
+\end{tcblisting}
+
+\begin{tcblisting}{}
+\begin{tikzpicture}[]
+	\dsll{my list}{one,
+		{yshift = 0.5cm}/two, % up 0.5cm
+		three,
+		{yshift = -0.5cm}/four,  % back down
+		null}
+		
+	\draw[thick, dotted, latex-latex] (my list-4)
+		to[out=-130, in=-50] node[above]{\textit{same level}}
+		(my list-1);
+\end{tikzpicture}
+\end{tcblisting}
