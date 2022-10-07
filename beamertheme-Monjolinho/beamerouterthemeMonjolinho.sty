@@ -1,0 +1,26 @@
+%
+% Beamer theme DC: outer
+%
+%	An outer theme specifies what the “outside” or “border” of the presentation slides should look
+%	like. It specifies whether there are head- and footlines, what is shown in them, whether there is a sidebar,
+%	where the logo goes, where the navigation symbols and bars go, and so on. It also specifies where the
+%	frametitle is put and how it is typeset.
+
+
+% Anotações
+\addtobeamertemplate{note page}{%
+	\setbeamercolor{structure}{fg=black, bg=white}
+	\setbeamercolor*{block title}{bg=structure.fg!40}
+	\setbeamercolor*{block body}{bg=structure.fg!30}
+	\setbeamercolor{section in toc}{fg=black}
+	\setbeamercolor{subsection in toc}{fg=black}
+	\setbeamercolor{subsubsection in toc}{fg=black}
+	\setbeamercolor{bibliography entry author}{fg=black}
+	\setbeamercolor{bibliography entry title}{fg=black} 
+	\setbeamercolor{bibliography entry location}{fg=black} 
+	\setbeamercolor{bibliography entry note}{fg=black}  
+}{%
+	% post-text
+}
+
+\setbeamertemplate{navigation symbols}{}
