@@ -1,0 +1,106 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%! Autor = Jander Moreira
+%! Data = 10/10/2022
+
+\documentclass[12pt]{beamer}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazilian]{babel}
+
+\title{Title}
+\subtitle{Subtitle}
+\author{Author}
+
+\usetheme{Monjolinho}
+\usepackage{tikz}
+
+\begin{document}
+
+\begin{frame}
+    \maketitle
+\end{frame}
+
+\begin{frame}
+    \frametitle{Title frame}
+
+    Normal text
+\end{frame}
+
+\newcommand{\todascores}{%
+    \foreach \cor in {dDarkJungleGreen, dCaputMortuum, dRussianViolet, dHunterGreen, dGamboge, dDarkBlue, dBrown, dBlue, dLightYellow, dGreen, black, white}{%
+        \scriptsize
+        \color{\cor}\cor\ \textbf{Bld} \textit{Itl}\smallskip\par
+    }
+}
+
+\begin{frame}
+    Cores\par
+    \foreach \bg in {dDarkJungleGreen, dCaputMortuum, dRussianViolet, dHunterGreen}{%
+        \begin{tikzpicture}%[transform shape, scale = 0.8]
+            \node[draw, fill = \bg, text width = 5em, anchor = north] {\todascores};
+            \node[fill = black, anchor = south] {\tiny\color{white}\bg};
+        \end{tikzpicture}
+    }
+\end{frame}
+
+\begin{frame}
+    Cores\par
+    \foreach \bg in {dGamboge, dDarkBlue, dBrown, dBlue}{%
+        \begin{tikzpicture}%[transform shape, scale = 0.8]
+            \node[draw, fill = \bg, text width = 5em, anchor = north] {\todascores};
+            \node[fill = black, anchor = south] {\tiny\color{white}\bg};
+        \end{tikzpicture}
+    }
+\end{frame}
+
+\begin{frame}
+    Cores\par
+    \foreach \bg in {dLightYellow, dGreen, black, white}{%
+        \begin{tikzpicture}%[transform shape, scale = 0.8]
+            \node[fill = \bg, text width = 5em, anchor = north] {\todascores};
+            \node[fill = black, anchor = south] {\tiny\color{white}\bg};
+        \end{tikzpicture}
+    }
+\end{frame}
+
+
+\newcommand{\lista}[1][<+->]{
+    \begin{enumerate}[#1]
+        \item One
+        \item Two
+        \item Three
+            \begin{itemize}[#1]
+                \item One
+                \item Two
+                \item Three
+                \item One
+            \end{itemize}
+        \item One
+        \item Two
+        \item Three
+            \begin{itemize}
+                \item One
+                \item Two
+                \item Three
+                \item One
+            \end{itemize}
+        \item One
+        \item Two
+        \item Three
+    \end{enumerate}
+
+}
+\begin{frame}
+    \setbeamerfont{itemize/enumerate body}{size = \scriptsize}
+    \setbeamerfont{itemize/enumerate subbody}{size = \scriptsize}
+    \begin{columns}
+        \begin{column}{0.4\textwidth}
+            \lista[]
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \lista[]
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\end{document}
