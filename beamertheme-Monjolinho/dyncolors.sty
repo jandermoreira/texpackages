@@ -71,8 +71,9 @@
     \else
         \GetColor{second level}
     \fi
-    \setbeamercolor{itemize/enumerate body}{fg = \CurrentColor}
-    \usebeamercolor[fg]{itemize/enumerate body}
+    \color{\CurrentColor}%
+    % \setbeamercolor{itemize/enumerate body}{fg = \CurrentColor}
+    % \usebeamercolor[fg]{itemize/enumerate body}
     \mode<all>
 }
 
@@ -93,30 +94,55 @@
     \defcounter{itemlevel}{\theitemlevel - 1}
 }
 
+\NewCommandCopy\BeamerCallItem\beamer@callorigitem
+\NewCommandCopy\BeamerParseItem\beamer@parseitem
 
-% \newcommand{\ditemstring}{%
-%     \ifcase\theitemlevel
-%     \PackageWarning{dyncolors}{Item level shouldn't be zero!}
-%     \or
-%     item%
-%     \or
-%     subitem%
-%     \else
-%     subsubitem%
-%     \fi
+% %! parser = off
+% \RenewDocumentCommand{\beamer@callorigitem}{}{%
+%     \NextColor% --- Patched here
+%     \@ifnextchar[\beamer@@callorigitem{%
+%         \beamer@origitem\kern0pt\ignorespaces%
+%     }%
 % }
+% \RenewDocumentCommand{\beamer@parseitem}{d<>}{%
+%     \gdef\beamer@closeitem{%
+%         \if@inlabel\indent\par\fi
+%         \end{actionenv}%
+%         \@noparitemfalse%
+%     }%
+%     \NextColor% --- Patched here
+%     \begin{actionenv}<#1>%
+%     \NextColor% --- Patched here
+%     \beamer@callorigitem%
+% }
+% %! parser = on
 
+%! parser = off
+\newcommand{\ColorItemsOn}{%
+    \RenewDocumentCommand{\beamer@callorigitem}{}{%
+        \NextColor% --- Patched here
+        \@ifnextchar[\beamer@@callorigitem{%
+            \beamer@origitem\kern0pt\ignorespaces%
+        }%
+    }%
+    \RenewDocumentCommand{\beamer@parseitem}{d<>}{%
+        \gdef\beamer@closeitem{%
+            \if@inlabel\indent\par\fi
+            \end{actionenv}%
+            \@noparitemfalse%
+        }%
+        \NextColor% --- Patched here
+        \begin{actionenv}<##1>%
+        \NextColor% --- Patched here
+        \beamer@callorigitem%
+    }%
+}
+\newcommand{\ColorItemsOff}{%
+    \RenewDocumentCommand{\beamer@callorigitem}{}{\BeamerCallItem}%
+    \RenewDocumentCommand{\beamer@parseitem}{d<>}{\BeamerParseItem<##1>}%
+}
+%! parser = on
 
-\def\beamer@callorigitem{\NextColor\@ifnextchar[\beamer@@callorigitem{\beamer@origitem\kern0pt\ignorespaces}}
+\ColorItemsOn %% defaults to On
 
-\def\beamer@parseitem<#1>{%
-    \gdef\beamer@closeitem{%
-    %% Handle empty item as LaTeX would do
-        \if@inlabel\indent\par\fi
-        \end{actionenv}%
-        %% Local change inside actionenv should survive, and should be
-        %% always false
-        \@noparitemfalse}%
-    \NextColor
-    \begin{actionenv}<#1>\NextColor\beamer@callorigitem}
 
