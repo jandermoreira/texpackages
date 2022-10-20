@@ -11,7 +11,8 @@
 
 % Options
 
-\RequirePackage{xcolor}
+\RequirePackage{tikz}
+% \RequirePackage{xcolor}
 
 % Color theme
 \definecolor{dDarkBlue}{HTML}{14163B}
@@ -27,122 +28,163 @@
 \definecolor{dGamboge}{HTML}{D89818}
 \definecolor{dRussianViolet}{HTML}{470E4A}
 
+\newcounter{ordem}
 
 % List environment
 \ExplSyntaxOn
+
 \cs_generate_variant:Nn \int_set:Nn { cn }
 \cs_generate_variant:Nn \seq_set_split:Nnn { cnn }
 
-\NewDocumentCommand { \ResetColor } { m } {
+\tl_new:N \g_current_color_tl
+\tl_set:Nn \g_current_color_tl { normal~text.fg }
+
+\cs_new:Npn \reset_color:n #1 {
     \int_set:cn { g_#1_current_int } { 0 }
+    \tl_gset:Nn \g_current_color_tl {
+        \seq_item:cn { g_#1_colors_seq  }{ 1 }
+    }
+
 }
-\NewDocumentCommand { \NewColorList } { m } {
+\cs_new:Npn \new_color_list:n #1 {
     \seq_new:c { g_#1_colors_seq }
     \int_new:c { g_#1_current_int }
-    \ResetColor { #1 }
+    \reset_color:n { #1 }
 }
-\NewDocumentCommand { \SetColorList } { mm }{
+\cs_new:Npn \set_color_list:nn #1#2 {
     \seq_set_split:cnn { g_#1_colors_seq } { , } { #2 }
 }
-\NewDocumentCommand { \GetColor } { m } {
+\cs_new:Npn \step_color:n #1 {
     \int_if_exist:NTF \l_index_int {} { \int_new:N \l_index_int }
     \int_set:Nn \l_index_int { \int_use:c { g_#1_current_int } }
-    \tl_gset:Nn \CurrentColor {
+    \tl_gset:Nn \g_current_color_tl {
         \seq_item:cn { g_#1_colors_seq  }{ \int_eval:n {\int_use:N  \l_index_int + 1} }
     }
-    \int_set:cn { g_#1_current_int } {
+    \int_gset:cn { g_#1_current_int } {
         \int_mod:nn { \l_index_int + 1 } { \seq_count:c { g_#1_colors_seq } }
     }
-    % \tl_use:N \CurrentColor
 }
+
+% document commands
+\NewDocumentCommand{\SetColorList}{mm}{
+    \set_color_list:nn { #1 } { #2 }
+}
+\NewDocumentCommand{\NewColorList}{m}{
+    \new_color_list:n { #1 }
+}
+\NewExpandableDocumentCommand{\CurrentColor}{}{\tl_use:N \g_current_color_tl}
+\NewDocumentCommand{\StepColor}{m}{
+    \step_color:n { #1 }
+}
+\NewDocumentCommand{\ResetColors}{m}{
+    \reset_color:n { #1 }
+}
+
 \ExplSyntaxOff
 
 \NewColorList{main}
-\SetColorList{main}{dDarkJungleGreen, dCaputMortuum, dRussianViolet}
+% \SetColorList{main}{dGamboge, dDarkJungleGreen, dHunterGreen, dRussianViolet, dCaputMortuum}
+\SetColorList{main}{red, green, blue, orange}
 
 \NewColorList{second level}
-\SetColorList{second level}{dHunterGreen, dGamboge}
+% \SetColorList{second level}{dHunterGreen, dGamboge}
+\SetColorList{second level}{brown, black, yellow}
 
+%! formatter = off
 \newcommand{\NextColor}{%
-    \mode<presentation>
-    \pgfmathparse{int(mod(\theitemlevel, 2))}
-    \ifnum\pgfmathresult = 0
-        \GetColor{main}
+    \pgfmathparse{int(mod(\@itemdepth + 1, 2))}%
+    \ifnum\pgfmathresult=0%
+        \StepColor{main}%
     \else
-        \GetColor{second level}
-    \fi
+        \StepColor{second level}%
+    \fi%
     \color{\CurrentColor}%
-    % \setbeamercolor{itemize/enumerate body}{fg = \CurrentColor}
-    % \usebeamercolor[fg]{itemize/enumerate body}
-    \mode<all>
 }
-
-\newcounter{itemlevel}
-\defcounter{itemlevel}{-1}
-\AtBeginEnvironment{itemize}{%
-    \ResetColor{main}
-    \defcounter{itemlevel}{\theitemlevel + 1}
-}
-\AtEndEnvironment{itemize}{%
-    \defcounter{itemlevel}{\theitemlevel - 1}
-}
-\AtBeginEnvironment{enumerate}{%
-    \ResetColor{main}
-    \defcounter{itemlevel}{\theitemlevel + 1}
-}
-\AtEndEnvironment{enumerate}{%
-    \defcounter{itemlevel}{\theitemlevel - 1}
-}
+%! formatter = on
 
 \NewCommandCopy\BeamerCallItem\beamer@callorigitem
-\NewCommandCopy\BeamerParseItem\beamer@parseitem
+% \NewCommandCopy\BeamerParseItem\beamer@parseitem
 
-% %! parser = off
-% \RenewDocumentCommand{\beamer@callorigitem}{}{%
-%     \NextColor% --- Patched here
-%     \@ifnextchar[\beamer@@callorigitem{%
-%         \beamer@origitem\kern0pt\ignorespaces%
-%     }%
-% }
-% \RenewDocumentCommand{\beamer@parseitem}{d<>}{%
-%     \gdef\beamer@closeitem{%
-%         \if@inlabel\indent\par\fi
-%         \end{actionenv}%
-%         \@noparitemfalse%
-%     }%
-%     \NextColor% --- Patched here
-%     \begin{actionenv}<#1>%
-%     \NextColor% --- Patched here
-%     \beamer@callorigitem%
-% }
-% %! parser = on
-
-%! parser = off
 \newcommand{\ColorItemsOn}{%
-    \RenewDocumentCommand{\beamer@callorigitem}{}{%
-        \NextColor% --- Patched here
-        \@ifnextchar[\beamer@@callorigitem{%
-            \beamer@origitem\kern0pt\ignorespaces%
-        }%
-    }%
-    \RenewDocumentCommand{\beamer@parseitem}{d<>}{%
-        \gdef\beamer@closeitem{%
-            \if@inlabel\indent\par\fi
-            \end{actionenv}%
-            \@noparitemfalse%
-        }%
-        \NextColor% --- Patched here
-        \begin{actionenv}<##1>%
-        \NextColor% --- Patched here
-        \beamer@callorigitem%
-    }%
+    \RenewDocumentCommand{\beamer@callorigitem}{}{\BeamerCallItemPatched}%
+% \RenewDocumentCommand{\beamer@parseitem}{d<>}{%
+%     \BeamerParseItemPatched <##1>%
+% }%
 }
 \newcommand{\ColorItemsOff}{%
     \RenewDocumentCommand{\beamer@callorigitem}{}{\BeamerCallItem}%
-    \RenewDocumentCommand{\beamer@parseitem}{d<>}{\BeamerParseItem<##1>}%
+% \RenewDocumentCommand{\beamer@parseitem}{d<>}{\BeamerParseItem<##1>}%
 }
-%! parser = on
+\AtBeginEnvironment{itemize}{
+    \pgfmathparse{int(mod(\@itemdepth + 1, 2))}%
+    \ifnum\pgfmathresult=0%
+    \ResetColors{main}%
+    \else
+    \ResetColors{second level}%
+    \fi%
+}
+\AtEndEnvironment{itemize}{
+    \PackageWarning{DEBUG}{fim itemize: \the\@itemdepth}
+    \pgfmathparse{int(mod(\@itemdepth + 1, 2))}%
+    \ifnum\pgfmathresult=0%
+    \ResetColors{main}%
+    \else
+    \ResetColors{second level}%
+    \fi%
+}
+
+\AtBeginEnvironment{enumerate}{
+    \pgfmathparse{int(mod(\@itemdepth + 1, 2))}%
+    \ifnum\pgfmathresult=1%
+    \ResetColors{main}%
+    \else
+    \ResetColors{second level}%
+    \fi%
+}
+\AtEndEnvironment{enumerate}{
+    \PackageWarning{DEBUG}{fim enumerate: \the\@itemdepth}
+    \pgfmathparse{int(mod(\@itemdepth + 1, 2))}%
+    \ifnum\pgfmathresult=1%
+    \ResetColors{main}%
+    \else
+    \ResetColors{second level}%
+    \fi%
+}
+
+%! formatter = off
+\NewDocumentCommand{\BeamerCallItemPatched}{}{%
+    \stepcounter{ordem}%
+    \NextColor% --- Patched here
+    \@ifnextchar[\beamer@@callorigitem{%
+        \beamer@origitem\kern0pt\ignorespaces%
+    }%
+}
+
+%%%%%%  APARENTEMENTE DESNECESSÁRIA ESSA ALTERAÇÃO
+% \NewDocumentCommand{\BeamerParseItemPatched}{d<>}{%
+%     \gdef\beamer@closeitem{%
+%         \if@inlabel\indent\par\fi
+%         %! parser = off
+%         \end{actionenv}%
+%         %! parser = on
+%         \@noparitemfalse%
+%     }%
+%     % \NextColor% --- Patched here
+%     %! parser = off
+%     \begin{actionenv}<#1>%
+%     %! parser = on
+%     % \NextColor% --- Patched here
+%     \beamer@callorigitem%
+% }
+%! formatter = on
 
 \ColorItemsOn %% defaults to On
 
+\NewDocumentCommand{\Block}{d<>om}{%
+    \begin{tikzpicture}
+        \node[draw, text width = 0.5\textwidth] (text) {#3};
+        \node[draw, anchor = east, circle] at (text.west) {$\triangleright$};
+    \end{tikzpicture}%
+}
 
+\endinput

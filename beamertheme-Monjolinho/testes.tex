@@ -12,95 +12,140 @@
 \author{Author}
 
 \usetheme{Monjolinho}
-\usepackage{tikz}
+% \usepackage{tikz}
+
+
 
 \begin{document}
 
-\begin{frame}
-    \maketitle
-\end{frame}
+    % \begin{frame}
+    %     \maketitle
+    % \end{frame}
+
 
 \begin{frame}
     \frametitle{Title frame}
-
-    Normal text
-\end{frame}
-
-\newcommand{\todascores}{%
-    \foreach \cor in {dDarkJungleGreen, dCaputMortuum, dRussianViolet, dHunterGreen, dGamboge, dDarkBlue, dBrown, dBlue, dLightYellow, dGreen, black, white}{%
-        \scriptsize
-        \color{\cor}\cor\ \textbf{Bld} \textit{Itl}\smallskip\par
-    }
-}
-
-\begin{frame}
-    Cores\par
-    \foreach \bg in {dDarkJungleGreen, dCaputMortuum, dRussianViolet, dHunterGreen}{%
-        \begin{tikzpicture}%[transform shape, scale = 0.8]
-            \node[draw, fill = \bg, text width = 5em, anchor = north] {\todascores};
-            \node[fill = black, anchor = south] {\tiny\color{white}\bg};
-        \end{tikzpicture}
-    }
-\end{frame}
-
-\begin{frame}
-    Cores\par
-    \foreach \bg in {dGamboge, dDarkBlue, dBrown, dBlue}{%
-        \begin{tikzpicture}%[transform shape, scale = 0.8]
-            \node[draw, fill = \bg, text width = 5em, anchor = north] {\todascores};
-            \node[fill = black, anchor = south] {\tiny\color{white}\bg};
-        \end{tikzpicture}
-    }
-\end{frame}
-
-\begin{frame}
-    Cores\par
-    \foreach \bg in {dLightYellow, dGreen, black, white}{%
-        \begin{tikzpicture}%[transform shape, scale = 0.8]
-            \node[fill = \bg, text width = 5em, anchor = north] {\todascores};
-            \node[fill = black, anchor = south] {\tiny\color{white}\bg};
-        \end{tikzpicture}
-    }
-\end{frame}
-
-
-\newcommand{\lista}[1][<+->]{
-    \begin{enumerate}[#1]
-        \item One
-        \item Two
-        \item Three
-            \begin{itemize}[#1]
-                \item One
-                \item Two
-                \item Three
-                \item One
-            \end{itemize}
-        \item One
-        \item Two
-        \item Three
-            \begin{itemize}
-                \item One
-                \item Two
-                \item Three
-                \item One
-            \end{itemize}
-        \item One
-        \item Two
-        \item Three
-    \end{enumerate}
-
-}
-\begin{frame}
-    \setbeamerfont{itemize/enumerate body}{size = \scriptsize}
-    \setbeamerfont{itemize/enumerate subbody}{size = \scriptsize}
+    \footnotesize
     \begin{columns}
-        \begin{column}{0.4\textwidth}
-            \lista[]
+        \begin{column}{4cm}
+            \begin{itemize}
+                \item Vermelho \theordem
+                \item Verde \theordem
+                \item [$\diamond$]Azul \theordem
+                \item Laranja \theordem
+                \item Vermelho \theordem
+                \item Verde \theordem
+                \begin{enumerate}
+                    \item Marrom \theordem
+                    \item Preto \theordem
+                    \item Amarelo \theordem
+                    \item Marrom \theordem
+                    \item Preto \theordem
+                \end{enumerate}
+                \item <2>Azul \theordem
+                \item <2>[$\diamond$]Laranja \theordem
+            \end{itemize}
         \end{column}
-        \begin{column}{0.4\textwidth}
-            \lista[]
+        \setcounter{ordem}{0}
+        \begin{column}{4cm}
+            \begin{enumerate}
+                \item Vermelho \theordem
+                \item <2>Verde \theordem
+                \item Azul \theordem
+                \item Laranja \theordem
+                \begin{enumerate}
+                    \item <3> Marrom \theordem
+                    \item Preto \theordem
+                    \item <2> Amarelo \theordem
+                    \item Marrom \theordem
+                \end{enumerate}
+                \item Vermelho \theordem
+                \item Verde \theordem
+                \item Azul \theordem
+                % \item Laranja \theordem
+            \end{enumerate}
         \end{column}
     \end{columns}
+
+    % \Block{Jander Moreira esteve aqui tentando criar uma minipage.}
+
 \end{frame}
+
+    % \newcommand{\todascores}{%
+    %     \foreach \cor in {dDarkJungleGreen, dCaputMortuum, dRussianViolet, dHunterGreen, dGamboge, dDarkBlue, dBrown, dBlue, dLightYellow, dGreen, black, white}{%
+    %         \scriptsize
+    %         \color{\cor}\cor\ \textbf{Bld} \textit{Itl}\smallskip\par
+    %     }
+    % }
+    %
+    % \begin{frame}
+    %     Cores\par
+    %     \foreach \bg in {dDarkJungleGreen, dCaputMortuum, dRussianViolet, dHunterGreen}{%
+    %         \begin{tikzpicture}%[transform shape, scale = 0.8]
+    %             \node[draw, fill = \bg, text width = 5em, anchor = north] {\todascores};
+    %             \node[fill = black, anchor = south] {\tiny\color{white}\bg};
+    %         \end{tikzpicture}
+    %     }
+    % \end{frame}
+    %
+    % \begin{frame}
+    %     Cores\par
+    %     \foreach \bg in {dGamboge, dDarkBlue, dBrown, dBlue}{%
+    %         \begin{tikzpicture}%[transform shape, scale = 0.8]
+    %             \node[draw, fill = \bg, text width = 5em, anchor = north] {\todascores};
+    %             \node[fill = black, anchor = south] {\tiny\color{white}\bg};
+    %         \end{tikzpicture}
+    %     }
+    % \end{frame}
+
+    % \begin{frame}
+    %     Cores\par
+    %     \foreach \bg in {dLightYellow, dGreen, black, white}{%
+    %         \begin{tikzpicture}%[transform shape, scale = 0.8]
+    %             \node[fill = \bg, text width = 5em, anchor = north] {\todascores};
+    %             \node[fill = black, anchor = south] {\tiny\color{white}\bg};
+    %         \end{tikzpicture}
+    %     }
+    % \end{frame}
+
+
+    % \newcommand{\lista}[1][<+->]{
+    %     \begin{itemize}
+    %         \item One
+    %         \item Two
+    %         \item Three
+    %         % \begin{enumerate}
+    %         %     \item One
+    %         %     \item Two
+    %         %     \item Three
+    %         %     \item One
+    %         % \end{enumerate}
+    %         \item One
+    %         \item Two
+    %         \item Three
+    %         % \begin{enumerate}
+    %         %     \item One
+    %         %     \item Two
+    %         %     \item Three
+    %         %     \item One
+    %         % \end{enumerate}
+    %         \item One
+    %         \item Two
+    %         \item Three
+    %     \end{itemize}
+    % }
+    %
+    % \begin{frame}
+    %     \setbeamerfont{itemize/enumerate body}{size = \scriptsize}
+    %     \setbeamerfont{itemize/enumerate subbody}{size = \scriptsize}
+    %     % \begin{columns}
+    %     %     \begin{column}{0.4\textwidth}
+    %             \lista[]
+    %     %     \end{column}
+    %     %     \begin{column}{0.4\textwidth}
+    %     %         \lista[]
+    %     %     \end{column}
+    %     % \end{columns}
+    % \end{frame}
 
 \end{document}

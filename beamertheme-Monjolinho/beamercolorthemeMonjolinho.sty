@@ -13,10 +13,16 @@
 % \setbeamercolor*{subsection in toc}{fg=white}
 % \setbeamercolor*{alerted text}{fg=red!95!black}
 % \setbeamercolor*{framesubtitle}{fg=white}
-%
-% % Blocos
-% \setbeamercolor*{block title}{bg=structure.bg!90}
-% \setbeamercolor*{block body}{bg=structure.bg!95}
+
+% Blocos
+\setbeamercolor*{block title}{
+	% use = normal text,
+	fg = normal text.fg!90!dLightYellow,
+	bg = normal text.bg!90!black,
+}
+\setbeamercolor*{block body}{bg = structure.bg!95}
+\setbeamerfont*{block title}{size = \normalsize, series = \bfseries}
+\setbeamerfont*{block body}{size = \small}
 % \setbeamercolor*{block title alerted}{
 %     fg = dRed,
 %     bg = dRed!40!normal text.fg
@@ -27,11 +33,11 @@
 %     bg = dGreen!40!normal text.fg
 % }
 % \setbeamercolor*{block body example}{bg=green!10!normal text.bg}
-%
-% % Anotações
-% \setbeamercolor*{note page}{fg=black, bg=white}
-% \setbeamercolor*{note title}{bg=black!10}
-% \setbeamercolor*{note date}{fg=black}
+
+% Anotações
+\setbeamercolor*{note page}{fg=black, bg=white}
+\setbeamercolor*{note title}{bg=black!10}
+\setbeamercolor*{note date}{fg=black}
 %
 % % Bibliografia e referências
 % \setbeamercolor{bibliography entry author}{fg=normal text.fg}
