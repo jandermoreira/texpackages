@@ -5,80 +5,6 @@
 
 \ExplSyntaxOn
 
-% \cs_generate_variant:Nn \tl_if_eq_p:NN { Nn }
-
-\NewDocumentCommand{\BodyBreak}{}{}
-
-\cs_generate_variant:Nn \regex_match:nnTF { nVTF }
-
-\bool_new:N \g_item_options_stop_bool
-\bool_new:N \g_item_has_overlay_bool
-\bool_new:N \g_item_has_custom_bullet_bool
-
-\tl_new:N \g_item_overlay_option_tl
-\tl_new:N \g_item_custom_bullet_option_tl
-
-% Pre: \l_tokens_seq has an overlay specification
-\cs_new:Nn \get_overlay_option: {
-    \tl_set:Nn \g_item_overlay_option_tl \l_tokens_seq
-    (ovelay:~\tl_use:N \g_item_overlay_option_tl)
-}
-
-\cs_new:Nn \get_bullet_option: {
-    \tl_set:Nn \g_item_overlay_option_tl \l_tokens_seq
-    (bullet:~\tl_use:N \g_item_custom_bullet_option_tl)
-}
-
-% Pre: \l_item_body_seq has a list segmented by > or ]
-% Pos:
-\cs_new:Nn \check_for_option: {
-    \bool_if:nTF { !\g_item_options_stop_bool } {
-        % get the first potential option
-        \tl_clear_new:N \l_option_tl
-        \tl_set:NV \l_option_tl { \seq_item:Nn \l_item_body_seq { 1 } }
-        % \seq_clear_new:N \l_tokens_seq
-        % \seq_set_split:NnV \l_tokens_seq { } { \l_option_tl }
-        (\tl_use:N \l_option_tl)
-
-        \regex_match:nVTF { <.*> } { \l_option_tl } {
-            (<>)
-        }{
-            (not <>)
-        }
-        % get first and last tokens of the option
-        % \tl_clear_new:N \l_first_tl
-        % \tl_clear_new:N \l_last_tl
-        % \tl_set:Nn \l_first_tl { \seq_item:Nn \l_tokens_seq { 1 }  }
-        % \tl_set:Nn \l_last_tl { \seq_item:Nn \l_tokens_seq { -1 }  }
-        % (\tl_use:N \l_first_tl \tl_use:N \l_last_tl)
-        %
-        % % check for overlay
-        % \bool_if:nTF {
-        %     \tl_if_eq_p:NV \l_first_tl { < }
-        %     && \tl_if_eq_p:NV \l_last_tl { > }
-        %     && !\g_item_has_overlay_bool}
-        % {
-        %     \get_overlay_option:
-        %     \bool_set_true:N \g_item_has_overlay_bool
-        %     % \seq_gpop_left:NN \l_item_body_seq \l_tokens_seq % dels segment
-        % }{
-        % % check for bullet replacement
-        %     \bool_if:nTF {
-        %         \tl_if_eq_p:NV \l_first_tl { [ }
-        %         && \tl_if_eq_p:NV \l_last_tl { ] }
-        %         && !\g_item_has_custom_bullet_bool}
-        %     {
-        %         \get_bullet_option:
-        %         \bool_set_true:N \g_item_has_custom_bullet_bool
-        %         % \seq_gpop_left:NN \l_item_body_seq \l_tokens_seq % dels segment
-        %     } {
-        %     % nothing to get
-        %         \bool_set_true:N \g_item_options_stop_bool
-        %     }
-        % }
-    } { (stop) } % else nothing...
-}
-
 
 \NewDocumentCommand{\doitem}{m}{
     \texttt{+~#1}\newline
@@ -101,23 +27,6 @@
         }
 
     }
-    % \regex_match:nnTF { \A\[.*\] } { #1 } {[]} {-}
-    % \tl_clear_new:N \l_item_body_tl
-    % \tl_set:Nn \l_item_body_tl { #1 }
-    % \tl_replace_once:Nnn \l_item_body_tl { > } { >\BodyBreak }
-    % \tl_replace_once:Nnn \l_item_body_tl { ] } { ]\BodyBreak }
-    %
-    % \bool_set_false:N \g_item_options_stop_bool
-    % \bool_set_false:N \g_item_has_overlay_bool
-    % \bool_set_false:N \g_item_has_custom_bullet_bool
-    % \seq_clear_new:N \l_item_body_seq
-    % \seq_set_split:NnV \l_item_body_seq { \BodyBreak } { \l_item_body_tl }
-    %
-    % \tl_clear:N \g_item_overlay_option_tl
-    % \tl_clear:N \g_item_custom_bullet_option_tl
-    % \check_for_option:
-    % \check_for_option:n { #1 }
-
     \par\vspace*{2em}
 }
 
