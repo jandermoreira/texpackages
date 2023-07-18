@@ -1,0 +1,167 @@
+%! Author = Jander Moreira
+%! Date = 07/10/2022
+
+%! suppress = MultipleIncludes
+
+\let\boxing@OriginalItem\item
+
+\newif\ifboxing@UseEnumItem
+\@ifpackageloaded{enumitem}{
+    \boxing@UseEnumItemtrue
+}{
+    \boxing@UseEnumItemfalse
+}
+
+\NewCounter{boxing@ItemLevel}
+% \NewCounter{boxing@Level1Counter}
+% \NewCounter{boxing@Level2Counter}
+
+% \NewDocumentCommand{\boxing@ExecuteBeamerItem}{ m }{%
+%     \boxing@OriginalItem#1%
+% }
+\NewDocumentCommand{\boxing@BeamerItem}{ m m +m }{%
+    \item >>>> ((#1)(#2)(#3))
+    % \IsEmptyOnce{#1}{%
+    %     \IsEmptyOnce{#2}{% no overlay, no option
+    %         \boxing@OriginalItem{\color{\CurrentBGColor} #3}%
+    %         \item Normal (<#1>[#2])
+    %     }{% no overlay, with option
+    %         \boxing@OriginalItem[#2] {\color{\CurrentBGColor} #3}%
+    %         \item[#1] Com estrela (<#1>[#2])
+    %     }%
+    % }{%
+    %     \IsEmptyOnce{#2}{% with overlay
+    %         \boxing@OriginalItem{{\color{\CurrentBGColor} #3}}%
+    %     }{% with overlay, with option
+    %         \boxing@OriginalItem{<#1>[#2] {\color{\CurrentBGColor} #3}}%
+    %     }%
+    % }
+    %! formatter = off
+    % \edef\l@overlayarg{#1}%
+    % \ifx\l@overlayarg\empty%
+    %     \def\l@overlayarg{1-}%
+    % \else
+    %     \def\l@overlayarg{#1}%
+    % \fi%
+    % \edef\l@optionarg{#2}%
+    % \begingroup
+    % \setbeamercolor{itemize/enumerate body}{fg = \CurrentBGColor}
+    % \boxing@OriginalItem{#3}
+    % \endgroup
+    % \visible<\l@overlayarg>{
+    %     \ifx\l@optionarg\empty%
+    %         \boxing@OriginalItem{\color{\CurrentBGColor}#3}%
+    %     \else
+    %         \boxing@OriginalItem[\l@optionarg]{\color{\CurrentBGColor}#3}%
+    %     \fi
+    % }
+    %! formatter = on
+}
+
+\NewDocumentCommand{\boxing@NonBeamerItem}{ m +m }{%
+    %! formatter = off
+    \def\l@optionarg{#1}%
+    \ifx\l@optionarg\empty%
+        \boxing@OriginalItem{\color{\CurrentBGColor}#2}%
+    \else%
+        \boxing@OriginalItem[#1]{\color{\CurrentBGColor}#2}%
+    \fi%
+    %! formatter = on
+}
+
+\NewDocumentCommand{\EnumerateItem}{ +m }{%
+    \ProcessItemArguments{\l@overlay}{\l@option}{\l@text}{#1}%
+    \UsePalette{\boxing@Palette}%
+    \StepPalette{\boxing@Palette}%
+    %! formatter = off
+    \item[---] >>>> #1 <\l@overlay>[\l@option](((\l@text)))\par
+    % \ifboxing@UseBeamer
+    %     \boxing@BeamerItem{\l@overlay}{\l@option}{\l@text}
+    % \else
+    %     \boxing@NonBeamerItem{\l@option}{\l@text}
+    % \fi
+    %! formatter = on
+    %
+    % \StepCounter{boxing@Level\theboxing@ItemLevel Counter}%
+}
+
+\NewDocumentCommand{\boxing@SetEnumerate}{ }{
+    \let\boxing@OriginalEnumerate\enumerate
+    \let\endboxing@OriginalEnumerate\endenumerate
+    \RenewDocumentEnvironment{enumerate}{ O{} D<>{} +b }{
+        \begin{boxingitems}{boxing@OriginalEnumerate}[##1]%
+            <##2>
+            ##3
+                }{
+        \end{boxingitems}
+    }
+}
+%! formatter = off
+\ifboxing@UseEnumerate
+    \boxing@SetEnumerate
+\fi
+%! formatter = on
+
+% colorenumerate: enumerated list using a color palette
+% #1: environment to be used (e.g. itemize, enumerate)
+% #2: optional parameters to the environment in #1 (brackets)
+% #3: boxing options (angle brackets)
+\newif\ifboxing@UseOptionalArguments
+\NewDocumentCommand{\boxing@BeginEnvironment}{}{}
+\NewDocumentCommand{\boxing@EndEnvironment}{}{}
+\NewDocumentCommand{\l@environmentoptions}{}{}
+\NewDocumentEnvironment{boxingitems}{ m O{} D<>{} +b }{%
+    \begingroup%
+    \ResetPalette{\boxing@Palette}%
+    \StepCounter{boxing@ItemLevel}%
+    \gatheritems{#4}%
+    \boxingset{#3}%
+    \expandafter\let\expandafter\boxing@BeginEnvironment\csname #1\endcsname%
+    \expandafter\let\expandafter\boxing@EndEnvironment\csname end#1\endcsname%
+    %
+    \IsEmpty{#2}{%
+        \boxing@BeginEnvironment%
+    }{%
+        \boxing@BeginEnvironment[#2]%
+    }%
+    \loopthroughitemswithcommand{\EnumerateItem}%
+    \boxing@EndEnvironment%
+    \AddToCounter{boxing@ItemLevel}{-1}
+    \endgroup%
+    }{%
+}
+
+
+\ExplSyntaxOn
+
+\cs_new:Npn \execute_list_of_items:nn #1#2 {
+    \int_zero_new:N \l_number_gathered_items_int
+    \int_set:Nn \l_number_gathered_items_int { \thenumgathereditems }
+
+    % Put all items in a list (getitems won't work for nested environments)
+    \seq_clear_new:c { l_item_list_level_#1_seq }
+    \tl_clear_new:N \l_item_body_tl
+    \int_zero_new:N \l_current_item_int
+    \tl_clear_new:N \l_argument_tl
+    \int_set:Nn \l_current_item_int { 1 }
+    \int_while_do:nn { \l_current_item_int <= \l_number_gathered_items_int } {
+        \exp_args:NNc \tl_set:No \l_item_body_tl { getitems@item@\int_use:N \l_current_item_int }
+        \tl_set:No \l_argument_tl { \l_item_body_tl }
+        \seq_put_right:cV { l_item_list_level_#1_seq } \l_argument_tl
+        \int_set:Nn \l_current_item_int { \l_current_item_int + 1 }
+    }
+
+    % Process list
+    \seq_map_inline:cn { l_item_list_level_#1_seq } {
+        \EnumerateItem { ##1 }
+    }
+    \seq_clear:c { l_item_list_level_#1_seq }
+}
+\NewExpandableDocumentCommand{\ExecuteListOfItems}{ m m }{
+    \execute_list_of_items:nn { #1 } { #2 }
+}
+\ExplSyntaxOff
+
+\RenewDocumentCommand{\loopthroughitemswithcommand}{ m }{%
+    \ExecuteListOfItems{\The{boxing@ItemLevel}}{#1}
+}

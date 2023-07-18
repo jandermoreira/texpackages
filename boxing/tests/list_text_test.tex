@@ -1,0 +1,47 @@
+%! Autor = Jander Moreira
+%! Data = 29/12/2022
+\documentclass[12pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{titling}
+\setlength{\droptitle}{-3cm}
+\usepackage{multicol}
+\usepackage{datetime}
+
+\title{Lists}
+\author{Jander Moreira}
+\date{\monthname, \the\year}
+
+\usepackage{enumitem}
+\usepackage[enumerate]{boxing}
+
+\begin{document}
+\maketitle
+
+List:
+\begin{enumerate}
+    [label = {\Roman*)}]%<palette = Midnight Waters>
+    \item First \textbf{item}
+    \fbox{teste}
+    \item Other item $y = x^2$
+    \begin{enumerate}
+        \item Doisss
+    \end{enumerate}
+    \item Yet another item
+    \begin{equation}
+        E = mc^2\label{eq:equation}
+    \end{equation}
+    \item And maybe more
+    \item [$\triangle$]And more
+    \item And more
+    \item And more
+    \begin{enumerate}
+        \item Um
+        \item <3>Dois
+        \item Três
+    \end{enumerate}
+    \item 3
+    \item 2\ldots
+    \item And the \textit{last}
+\end{enumerate}
+
+\end{document}
