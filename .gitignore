@@ -275,5 +275,8 @@ TSWLatexianTemp*
 # Makeindex log files
 *.lpz
 
-docs/*
-!docs/*-doc.pdf
+# versionchanges
+*.vcind
+
+#docs/*
+#!docs/*-doc.pdf
