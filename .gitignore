@@ -276,5 +276,5 @@ TSWLatexianTemp*
 *.lpz
 
 docs/*
-!docs/*.pdf
+!docs/*-doc.pdf
 src/icons/
