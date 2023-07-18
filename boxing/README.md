@@ -1,4 +1,4 @@
 # boxing
 $\LaTeX$ package to draw boxes
 
-This code is \color{red}under development\color{black} and it's not ready for the general public.
+This code is $\textsf{\color{red}under development}$ and it's not ready for the general public.
