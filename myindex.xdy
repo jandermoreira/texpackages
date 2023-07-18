@@ -1,0 +1,52 @@
+;(define-location-class "arabic-page-numbers" ("arabic-numbers")             
+;                    :min-range-length 2)                            
+
+;(define-attributes (("definition" "usage" "default" "hyperpage")))
+
+
+;(define-crossref-class "see")
+(markup-crossref-list :class "see" :open "\seelinkk{" :sep "; " :close "}{}")
+
+;(define-crossref-class "seealso")
+(markup-crossref-layer-list :sep "}, \seelinkk{")
+;(markup-crossref-list :class "seealso" :open "\seealsolinkk{" :sep "; " :close "}{}")
+
+;(define-crossref-class "hyperindexformat")
+;(markup-crossref-list :class "hyperindexformat" :open "\hyperindexformat{" :sep "; " :close "}{}")
+
+
+;;; \hyperlink{index:#1}{#1}
+
+(define-location-class-order (
+              "arabic-page-numbers"
+              "see"
+              "seealso"))
+
+(markup-index :open  "~n\begin{theindex}
+                    \providecommand*\lettergroupDefault[1]{}
+                    \providecommand*\lettergroup[1]{%
+                        \par\textbf{#1}\par
+                        \nopagebreak
+                    }
+                    \newcommand{\targetindexentryy}[1]{\hypertarget{index:#1}{#1}}
+                    \newcommand{\seelinkk}[1]{{\hyperlink{index:#1}{#1}}}
+                    \newcommand{\seealsolinkk}[1]{\seealso{\hyperlink{index:#1}{#1}}}
+                ~n"     
+    :close "~n~n\end{theindex}~n"
+    :tree)
+
+
+(markup-indexentry :open "~n \item "            :depth 0)
+(markup-indexentry :open "~n    \subitem "      :depth 1)
+(markup-indexentry :open "~n      \subsubitem " :depth 2)
+
+
+(markup-locref-list :sep ", ")
+(markup-locclass-list :open ", " :close "" ) ;; :sep ", "
+
+
+(markup-locref :open "\hyperpage{" :close "}")
+(markup-locref :open "\hyperpage{" :close "}" :attr "hyperpage")   
+
+
+(markup-keyword-list :open "\targetindexentryy{" :close "}" )
