@@ -4,7 +4,7 @@ This package extends the algorithmicx package (algpseudocode) to support multili
 ## How to use
 **algxpar** is available at CTAN.org: [algxpar](https://www.ctan.org/pkg/algxpar) and, therefore, as part of the TeX Live distribution.
 
-If you prefer, copy `algxpar.sty` and the appropriate `*.kw.tex`  to somewhere in your $\TeX$ path.
+If you prefer, copy `algxpar.sty` and the appropriate `*.kw.tex`  to somewhere in your $\TeX$ path. Please see the manual for other required packages.
 
 Files to use the package:  
 * `algxpar.sty`
