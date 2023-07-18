@@ -1,8 +1,7 @@
 # temabeamerlalic
 Tema do LALIC para o beamer
 
-GNU GENERAL PUBLIC LICENSE
-Version 3 (or later)
+LPPL Version 1.3c  2008-05-04 or later
 
 By Jander Moreira (moreira.jander@gmail.com)
 
