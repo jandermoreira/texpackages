@@ -1,0 +1,103 @@
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  MENDNOTES package: endnotes with support for multiple categories
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Jander Moreira
+% moreira.jander@gmail.com
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage
+	{mendnotes}
+	[2019/07/08 Endnotes]
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Options
+\RequirePackage{pgfkeys}
+\pgfkeys{
+	/mendnotes/.cd,
+	notes name/.store in = \men@list,
+	notes name = default,
+	print mark/.code = {\textsuperscript{\arabic{#1}}},
+	sep/.code = {\textsuperscript{#1}},
+	sep/.default = {,},
+	.unknown/.code = {%
+		\let\searchname=\pgfkeyscurrentname%
+		\edef\men@list{\searchname}%
+	},
+}
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Variables
+\newcounter{notescounter}
+\setcounter{notescounter}{0}
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Code: internals
+
+\RequirePackage{alphalph}
+\RequirePackage{amssymb}
+\newcommand*{\fnsymbolsingle}[1]{%
+	\ensuremath{%
+		\ifcase#1%
+			\or *%
+			\or \dagger%
+			\or \ddagger%
+			\or \sharp%
+			\or \mathseion%
+			\or \natural%
+			\or \bigstar%
+			\or \spadesuit%
+			\or \clubsuit%
+			\or \blacklozenge%
+			\else%
+			\@ctrerr%
+		\fi%
+	}%
+}
+\newalphalph{\fnsymbolmult}[mult]{\fnsymbolsingle}{}
+
+\newcommand{\newnotes}[1]{%
+	\newcounter{endnotes#1}%
+	\ifnum\thenotescounter=0%
+		\edef\@tmpsymbol{}% no symbol for default notes
+	\else%
+		\edef\@tmpsymbol{\fnsymbolmult{\thenotescounter}}%
+	\fi%
+	\expandafter\edef\csname endnotessymbol#1\endcsname{\@tmpsymbol}%
+	\expandafter\newwrite\csname endnotes@#1\endcsname%
+	\immediate\openout\csname endnotes@#1\endcsname=\jobname-endnotes#1.tex\relax%
+	\stepcounter{notescounter}%
+}
+\newnotes{default} % create default list
+
+\newcommand{\showendnote}[4]{%
+	\noindent\hspace{-1em}\parbox{2em}{\hfill\textsuperscript{#1#2}}\hspace{1em}#3\dotfill~#4\par
+}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Code: user commands
+
+\def\endnote{} % to 'reset' the command, allowing it to be renewed
+\renewcommand{\endnote}[2][]{{%
+	\pgfkeys{/mendnotes/.cd,  #1}%
+	\refstepcounter{endnotes\men@list}%
+	\expandafter\textsuperscript{\csname endnotessymbol\men@list\endcsname\arabic{endnotes\men@list}}%
+	\immediate\write\csname endnotes@\men@list\endcsname{%
+		\detokenize{\showendnote}%
+		{\csname endnotessymbol\men@list\endcsname}%
+		{\csname theendnotes\men@list\endcsname}%
+		{\detokenize{#2}}%
+		{\thepage}%
+	}%
+}}
+
+\newcommand{\printendnotes}[1][]{{%
+	\pgfkeys{/mendnotes/.cd, #1}%
+	\immediate\closeout\csname endnotes@\men@list\endcsname%
+	\input{\jobname -endnotes\men@list.tex}%
+}}
+
+
+\endinput

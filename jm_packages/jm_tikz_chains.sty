@@ -1,0 +1,35 @@
+%
+% JM_TIKZ_CHAINS.STY
+% Personalização das opções do Tikz
+% Jander Moreira
+%
+% Requer \usepackage{tikz}
+%
+
+%
+% Bibliotecas
+%
+\usetikzlibrary{
+	matrix,
+	chains,
+	scopes
+}
+
+%
+% Estilos de desenho
+%
+\tikzset{
+	% Seta em ângulo reto saindo na horizontal
+	h angle arrow/.style={
+		thick,
+		latex-,
+		to path = {-| (\tikztotarget)}
+		},
+	% Seta em ângulo reto saindo na vertical
+	v angle arrow/.style={
+		thick,
+		latex-,
+		to path = {|- (\tikztotarget)}
+		},
+}%\tikzset
+

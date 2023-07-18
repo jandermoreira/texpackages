@@ -1,0 +1,147 @@
+%
+%	DRAWDC: tools for drawing data structures and more
+%	
+%	Jander Moreira -- DC/UFSCar
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{drawdc}[2019/05/15 DRAWDC: tools for drawing data structures and more]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Package options
+\RequirePackage{pgfopts}
+\pgfkeys{
+	/drawdc/.cd,
+	%
+	array/.code = {
+		\wlog{'\pgfkeyscurrentkey' selected.}
+		\drawdc@arraytrue
+	},
+	%
+	matrix/.code = {
+		\wlog{'\pgfkeyscurrentkey' selected.}
+		\drawdc@matrixtrue
+	},
+	%
+	btree/.code = {
+		\wlog{'\pgfkeyscurrentkey' selected.}
+		\drawdc@btreetrue
+	},
+	%
+	flowchart/.code = {
+		\wlog{'\pgfkeyscurrentkey' selected.}
+		\drawdc@flowcharttrue
+	},
+	%
+	linkedlist/.code = {
+		\wlog{'\pgfkeyscurrentkey' selected.}
+		\drawdc@linkedlisttrue
+	},
+	%
+	file/.code = {
+		\wlog{'\pgfkeyscurrentkey' selected.}
+		\drawdc@filetrue
+	},
+	filenew/.code = {
+		\wlog{'\pgfkeyscurrentkey' selected.}
+		\drawdc@filenewtrue
+	},
+	record/.code = {
+		\wlog{'\pgfkeyscurrentkey' selected.}
+		\drawdc@recordtrue
+	},
+}
+\newif\ifdrawdc@array
+\drawdc@arrayfalse
+\newif\ifdrawdc@matrix
+\drawdc@matrixfalse
+\newif\ifdrawdc@btree
+\drawdc@btreefalse
+\newif\ifdrawdc@flowchart
+\drawdc@flowchartfalse
+\newif\ifdrawdc@linkedlist
+\drawdc@linkedlistfalse
+\newif\ifdrawdc@file
+\drawdc@filefalse
+\newif\ifdrawdc@filenew
+\drawdc@filenewfalse
+\newif\ifdrawdc@record
+\drawdc@recordfalse
+
+\ProcessPgfOptions{/drawdc}
+
+
+\RequirePackage{tikz}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Inputs for libraries
+\ifdrawdc@array\input{drawdc-array}\fi
+\ifdrawdc@matrix\input{drawdc-matrix}\fi
+\ifdrawdc@btree\input{drawdc-btree}\fi
+\ifdrawdc@flowchart\input{drawdc-flowchart}\fi
+\ifdrawdc@linkedlist\input{drawdc-linkedlist}\fi
+\ifdrawdc@file\input{drawdc-file}\fi
+\ifdrawdc@filenew\input{drawdc-file-new}\fi
+\ifdrawdc@record\input{drawdc-record}\fi
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Macros
+\newcommand{\ddtikzset}[1]{%
+	\def\keysmacro{/tikz/.cd, #1}%
+	\edef\ekeysmacro{\keysmacro}%
+	\pgfkeysalsofrom{\ekeysmacro}%
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Symbolos
+\usetikzlibrary{decorations.pathreplacing, decorations.markings}
+\RequirePackage{bm}
+\DeclareRobustCommand{\EmptySymb}{%
+	\scalebox{1.1}{\raisebox{0.1em}{$\boldsymbol{\ominus}$}}%
+}
+
+\DeclareRobustCommand{\NullSymb}{%
+	\mbox{\scalebox{1.1}{\raisebox{0.1em}{$\boldsymbol{\oslash}$}}}%
+}
+
+
+%\newcommand{\NullSymb}{%
+%	\begin{tikzpicture}
+%		\draw%[line width = 0.05ex]
+%			(0, 0) circle (0.8ex)
+%			(0, 0) ++(225:0.8ex) -- ++(45:1.6ex);
+%	\end{tikzpicture}%
+%}
+%
+%\newcommand{\EmptySymb}{%
+%	\begin{tikzpicture}
+%		\draw%[line width = 0.05ex]
+%			(0, 0) circle (0.8ex)
+%			(-0.8ex, 0) -- (0.8ex, 0);
+%	\end{tikzpicture}%
+%}
+
+\usetikzlibrary{arrows.meta}
+\tikzset{
+	every link/.style = {
+		line width = 0.5pt,
+		-latex,
+		shorten > = 0.5pt, % todo: parâmetro
+		shorten < = -1.2mm, % todo: parâmetro
+		{Circle[open, width=0.8mm,length=0.8mm]}-latex,
+	},
+}
+
+\newcommand{\ddlink}[3][--]{%
+	\draw[every link] #2 #1 #3;
+}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\endinput

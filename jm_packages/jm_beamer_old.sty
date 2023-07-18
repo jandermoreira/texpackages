@@ -1,0 +1,123 @@
+%
+% JM_BEAMER.STY
+% Personalização da apresentação do beamer
+% Jander Moreira
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{jm_beamer}[2015/03/31 Beamer personalization by Jander]
+
+%
+% Pacotes
+%
+\RequirePackage{multicol}
+%\RequirePackage{ifthen}
+
+%
+% Opções/parâmetros
+%
+\newif\if@showdisclaimer
+\@showdisclaimertrue
+\DeclareOption{nodisclaimer}{
+	\@showdisclaimerfalse
+}
+\newif\if@twocolumncontents
+\@twocolumncontentsfalse
+\DeclareOption{twocolumncontents}{
+	\@twocolumncontentstrue
+}
+\DeclareOption*{
+	\PackageWarning{jm_beamer}{Unknown ‘\CurrentOption’}
+}
+\ProcessOptions\relax
+
+%
+% Tema e elementos visuais
+%
+\usetheme{Hannover}
+%\setbeamertemplate{navigation symbols}{\small\thepage/\thelastpage}
+\setbeamertemplate{navigation symbols}{%
+	\large\insertframenumber/\inserttotalframenumber%  "página x de y"
+}
+
+%
+% Configurações de estilo
+%
+
+% Destaque em cor azul nas transições de eslaides
+\newcommand{\highlight}[1]{\hspace{0.001pt}{\color<2->[rgb]{0,0,1}#1}}
+\newcommand{\disclaimer}{
+	\begin{tiny}
+		\begin{flushright}
+			\textit{Este material é complementar, sendo \\
+			apenas uma apresentação de aula e não\\
+			consistindo em material suficiente para estudo.}
+		\end{flushright}
+	\end{tiny}
+}
+
+% Uso de vetores em negrito, sem a seta
+\renewcommand{\vec}[1]{\mathbf{#1}}
+
+% Início e fim da apresentação
+\newcommand{\twocolumntoc}{
+	\begin{multicols}{2}
+		\raggedcolumns
+		\tableofcontents
+	\end{multicols}
+}
+\newcommand{\addpreamble}{
+	\begin{frame}
+		\titlepage
+		\vspace{1cm}
+		\if@showdisclaimer
+			\disclaimer
+		\fi
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{Agenda}
+		\if@twocolumncontents
+			\twocolumntoc
+		\else
+			\tableofcontents
+		\fi
+	\end{frame}
+}
+\newcommand{\addcredits}{
+	\section*{Créditos}
+	\begin{frame}[b]
+		\frametitle{Créditos}
+		
+		\begin{flushright}
+			Jander Moreira \\
+			{\tiny \url{http://www.dc.ufscar.br/~jander} \\
+				\href{mailto:jander@dc.ufscar.br?Subject=Contato}%
+					{\texttt{jander@dc.ufscar.br}}
+			}
+	
+				\vspace{0.8cm}
+			Universidade Federal de São Carlos \\
+			{\tiny \url{http://www.ufscar.br}}
+	
+				\vspace{0.8cm}
+			Departamento de Computação \\
+			{\tiny \url{http://www.dc.ufscar.br}}
+			\vspace{0.5cm}
+		\end{flushright}
+	\end{frame}
+}
+
+% Geração automática de página de título para cada seção
+\AtBeginSection{%
+	\begin{frame}[c]%
+		\begin{Huge}
+			\@currentlabelname%
+		\end{Huge}%
+	\end{frame}%
+}
+
+
+%
+% Fim
+%
+\endinput

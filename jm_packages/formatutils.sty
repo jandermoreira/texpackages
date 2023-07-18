@@ -1,0 +1,168 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Estilo: FORMATUTILS
+% Utilitários para formatações comuns
+% Jander Moreira
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{formatutils}[2019/09/10 Formatting utilities]
+
+%%%%%%%%%%%%%%%
+% Opções/parâmetros
+%
+\newif\if@biblatex
+\@biblatextrue % new default 10.set.19
+\DeclareOption{biblatex}{ % for backward compatibility
+    \@biblatextrue
+}
+\DeclareOption{bibtex}{ % fall back to bibtext
+    \@biblatexfalse
+}
+
+\DeclareOption*{
+    \PackageWarning{formatutils}{Unknown option '\CurrentOption'. Ignored.}
+}
+
+\ProcessOptions\relax
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%
+% Formatting
+\@ifpackagewith{babel}{brazilian}{
+    \RequirePackage{icomma} % no space after comma
+}{}
+\RequirePackage[all]{nowidow} % avoid widow/orphan lines
+
+\@ifclassloaded{beamer}{}{%else
+    \RequirePackage{enumitem}
+    \setlist{
+        topsep = 0.2\baselineskip,
+        noitemsep,
+        parsep = 0.2\baselineskip,
+    }
+}
+
+\RequirePackage{xcolor}
+\PassOptionsToPackage{hyphens}{url}
+\@ifclassloaded{beamer}{
+    \RequirePackage{hyperref}
+}{
+    \RequirePackage[pdfusetitle, pdfencoding=unicode]{hyperref}
+    \hypersetup{
+        colorlinks,
+        urlcolor = black!50!blue,
+        linkcolor = blue!30!black,
+        citecolor = black!80,
+    }
+}
+
+\newcommand{\mathsl}[1]{\textit{\rmfamily #1}}
+
+\RequirePackage{algorithm}
+\renewcommand{\ALG@name}{Algoritmo}
+\renewcommand{\listalgorithmname}{Lista de \ALG@name s}
+\floatstyle{plaintop}
+\restylefloat{algorithm}
+\RequirePackage{caption}
+\captionsetup{
+    belowskip = \baselineskip,
+    aboveskip = 0.2\baselineskip,
+}
+
+\RequirePackage{booktabs}
+
+%%%%%%%%%%%%%%%
+% Symbols
+\RequirePackage[binary-units]{siunitx}
+\RequirePackage{amsmath} % math operator
+\@ifpackagewith{babel}{brazilian}{
+    \sisetup{
+        output-decimal-marker = {,},
+        detect-weight = true,
+    }
+    \DeclareMathOperator{\sen}{sen}
+    \renewcommand{\sin}{\sen}
+}{}
+\RequirePackage[full]{textcomp} % \textdollaroldstyle
+\newcommand{\cifrao}{\textdollaroldstyle}
+\newcommand{\Reais}[1]{\mbox{\normalfont R\cifrao\hspace{0.1em}\num{#1}}}
+\newcommand{\Celsius}[1]{\SI{#1}{\celsius}}
+\newcommand{\Ordinal}[1][o]{\kern-0.07em.\kern-0.18em\textsuperscript{#1}}
+
+
+%%%%%%%%%%%%%%%
+% ABNT, sem "<" ">" nas URIs
+%! formatting = off
+\if@biblatex
+    \RequirePackage{csquotes}
+    \RequirePackage[
+        backend = biber,
+        style = abnt,
+        ittitles, justify, indent, sccite,
+        giveninits,
+        noslsn,
+        repeatfields,
+    %pretty,
+    ]{biblatex}
+
+    \addbibresource{bib.bib}
+
+    \newcommand{\citeonline}[2][]{\textcite[#1]{#2}} % bibtex compatibility
+\else
+    \PackageWarning{formatutils}{The use of BibTex is going to be discontinued.}
+    \RequirePackage[alf]{abntex2cite}
+\fi
+%! formatting = on
+
+% URL citations:
+% (https://tex.stackexchange.com/a/517532/64821)
+\DeclareFieldFormat{url}{\bibstring{urlfrom}\space\url{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%5
+% Utilities and conveniences
+
+\RequirePackage{tcolorbox}
+\newcommand{\emedicao}{
+    \begin{tcolorbox}[title = \textbf{Alerta}, colback = red!80]
+        \centering%\raggedright
+        \Huge\textbf{\color{white}\sffamily Documento em edição\ldots}
+    \end{tcolorbox}
+}
+
+\let\fmt@title\title
+\renewcommand{\title}[2][]{%
+% beamer has a short title, article doesn't
+    \@ifclassloaded{beamer}{\fmt@title[#1]{#2}}{\fmt@title{#2}}
+    \newcommand{\documenttitle}{#2} % for further reference
+    \newcommand{\documentshorttitle}{#1} % for further reference
+}
+\let\fmt@subtitle\subtitle
+\@ifclassloaded{beamer}{
+    \renewcommand{\subtitle}[1]{%
+        \fmt@subtitle{#1}%
+        \newcommand{\documentsubtitle}{#1}%
+    }
+}{}
+
+\RequirePackage{graphicx}
+\graphicspath{
+        {./figuras/}
+        {/home/jander/multimidia/imagens/}
+        {/home/jander/multimidia/imagens/unsplash/}
+        {/home/jander/multimidia/imagens/icons/}
+        {/home/jander/multimidia/imagens/dall-e/}
+        {/home/jander/multimidia/imagens/pixabay/}
+        {/home/jander/multimidia/imagens/freepik/}
+        {/home/jander/multimidia/imagens/pexels/}
+        {/home/jander/multimidia/imagens/logos/}
+        {/home/jander/multimidia/imagens/internet/}
+        {/home/jander/multimidia/imagens/tikz/out}
+        {/home/jander/multimidia/imagens/outras}
+}
+
+
+% Fim
+%
+\endinput

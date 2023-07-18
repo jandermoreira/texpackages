@@ -1,0 +1,113 @@
+%
+% JM_CPROGRAM.STY
+% Estilos para código de programas escritos em C
+% Jander Moreira
+%  2015:		Proposta inicial
+%  2018:		Ajustes
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{jm_cprogram}[2017/11/10 Listing program in C]
+
+%
+% Pacotes
+%
+\RequirePackage{xcolor}
+\RequirePackage{textcomp} % produz apóstrofe reto no lstlisting
+
+\newcommand{\codefamily}{\ttfamily}
+
+%
+% Listagens em C
+%
+\RequirePackage{listings}
+\RequirePackage{lstautogobble}
+\@ifclassloaded{beamer}{
+	\lstset{
+		keywordstyle = \bfseries\color{orange!30},
+		stringstyle = \color{green!40},
+		identifierstyle = \color{yellow!40}\bfseries,
+		commentstyle = \slshape, %\fontseries{lc}\selectfont\itshape,
+	}
+}{
+	\lstset{
+		keywordstyle = \bfseries\color{black!80},
+		stringstyle = \color{black!70},
+		identifierstyle = \color{black!80}\bfseries,
+		commentstyle = \slshape, %\fontseries{lc}\selectfont\itshape,
+	}
+}
+\lstset{
+	language = C,
+	basicstyle = \footnotesize\codefamily,
+	showstringspaces = false,
+	tabsize = 4,
+	numbers = none,
+	numberstyle = \ttfamily\tiny\color{gray},
+	numbersep = 5pt,
+	postbreak=\space,
+	breakindent=5pt,
+	breaklines,
+	upquote = true,
+	escapeinside = {/*@}{@*/},
+	autogobble,
+	% literate =
+	% 	{á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+	% 	% {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+	% 	% {à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+	% 	% {À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+	% 	% % {ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+	% 	% {ã}{{\~a}}1 {õ}{{\~o}}1
+	% 	% {Ã}{{\~A}}1 {Õ}{{\~O}}1
+	% 	% {Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+	% 	% {â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+	% 	% {Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+	% 	% {ç}{{\c c}}1 {Ç}{{\c C}}1
+	% 	% {ű}{{\H{u}}}1 {Ű}{{\H{U}}}1 {ő}{{\H{o}}}1 {Ő}{{\H{O}}}1
+	% 	% {ñ}{{\~n}}1 {Ñ}{{\~N}}1
+	% 	% {¿}{{?`}}1
+}
+
+%
+% Floats para programas
+%
+\RequirePackage{newfloat}
+\DeclareFloatingEnvironment[
+	fileext = prog,
+	listname = {Lista de programas},
+	name = Programa,
+	placement = tbhp,
+	within = chapter,
+	chapterlistsgaps = off,
+]{program}
+
+% Apóstrofe reto em \texttt
+% Extraído de https://tex.stackexchange.com/questions/436308/changing-all-single-quotes-to-be-straight-when-within-texttt
+\RequirePackage{xparse}
+\ExplSyntaxOn
+\NewDocumentCommand{\sqtext}{m}
+{
+	\group_begin:
+	\tl_set:Nn \l_jmlarson_texttt_tl { #1 }
+	\regex_replace_all:nnN { ' } { \c{textquotesingle} } \l_jmlarson_texttt_tl
+	\codefamily
+	\tl_use:N \l_jmlarson_texttt_tl
+	\group_end:
+}
+\ExplSyntaxOff
+% fim do código emprestado
+\newcommand{\codigo}[1]{{\normalfont\codefamily\small\sqtext{#1}}}
+\newcommand{\codigoc}[1]{{\normalfont\codefamily\sqtext{#1}}}
+\newcommand{\CodeString}[1]{{\normalfont\ttfamily''{\small\sqtext{#1}}''}}
+\newcommand{\CodeStringc}[1]{{\normalfont\ttfamily''{\sqtext{#1}}''}}
+
+
+\RequirePackage{listings}
+%\RequirePackage{xstring}
+\newcommand{\inputlisting}[2][]{%
+    \lstinputlisting[#1]{#2}
+
+    {\tiny Arquivo: \nolinkurl{#2}.}
+}
+
+
+\endinput

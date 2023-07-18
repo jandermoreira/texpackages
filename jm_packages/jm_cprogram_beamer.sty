@@ -1,0 +1,48 @@
+%
+% JM_CPROGRAM.STY
+% Estilos para código de programas escritos em C
+% Jander Moreira
+%  2015:		Proposta inicial
+%
+
+%
+% Pacotes
+%
+\RequirePackage{xcolor}
+
+%
+% Listagens em C
+%
+\RequirePackage{listings}
+\RequirePackage{lstautogobble}
+%\RequirePackage{lmodern}
+%\RequirePackage[T1]{fontenc}
+\lstset{
+	language = C,
+	basicstyle = \ttfamily, % \fontseries{lc}\selectfont,
+	keywordstyle = \bfseries\color{orange!30},
+	stringstyle = \color{green!40},
+	identifierstyle = \color{yellow!40}\bfseries,
+	commentstyle = \slshape, %\fontseries{lc}\selectfont\itshape,
+	showstringspaces = false,
+	tabsize = 4,
+	numbers = none,
+	numberstyle = \ttfamily\tiny\color{gray},
+	numbersep = 5pt,
+	postbreak=\space,
+	breakindent=5pt,
+	breaklines,
+	%frame = tRBl,
+	%frameround = tttt,
+	escapeinside = {/*@}{@*/},
+	autogobble,
+	upquote = true,
+}
+
+%
+% Floats para programas
+%
+\RequirePackage{float}
+%\floatstyle{boxed}
+\newfloat{program}{thp}{lop}
+\floatname{program}{Programa}

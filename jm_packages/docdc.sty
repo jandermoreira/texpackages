@@ -1,0 +1,130 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{docdc}[2018/06/20 Format for documents]
+
+
+%
+% Opções/parâmetros
+%
+\newif\if@mobile
+\@mobilefalse
+\DeclareOption{mobile}{
+	\@mobiletrue
+}
+\def\docdc@logoimage{/home/jander/multimidia/imagens/logos/dc-grande}
+\DeclareOption{cap}{
+	\def\docdc@logoimage{cap}
+}
+\DeclareOption{ori}{
+	\def\docdc@logoimage{/home/jander/multimidia/imagens/logos/ori}
+}
+\DeclareOption{uab}{
+	\def\docdc@logoimage{uab}
+}
+\DeclareOption*{
+	\edef\docdc@logoimage{/home/jander/multimidia/imagens/logos/\CurrentOption}
+}
+\ProcessOptions\relax
+
+\RequirePackage{jm_symbols}
+\RequirePackage{microtype}
+
+\RequirePackage{graphicx}
+\graphicspath{%
+	{./figuras/}%
+	{/home/jander/multimidia/imagens/logos/}%
+	{/home/jander/multimidia/imagens/icons/}%
+	{/home/jander/multimidia/imagens/pixabay/}%
+	{/home/jander/multimidia/imagens/getty/}%
+}
+
+\RequirePackage{geometry}
+\newcommand{\ifmobile}[2]{%
+	\if@mobile%
+		#1%
+	\else%
+		#2%
+	\fi%
+}
+\ifmobile{
+	% paperwidth e margin escolhidos para igualar a largura da coluna usando
+	% ou não a opção mobile
+	\geometry{paperwidth=9.32426cm, paperheight=150mm, onecolumn, margin=5mm}%
+	%\addtolength{\topmargin}{-.875in}%
+	\addtolength{\textheight}{-7mm}%
+	%\renewcommand*\familydefault{\sfdefault}%
+}{
+	\geometry{a4paper, left=2.00cm, right=2.00cm, top=1.80cm, bottom=2.00cm}
+}
+%legacy...
+\newcommand{\docdcnonmobile}[1]{%
+	\if@mobile%
+	\else%
+		#1%
+	\fi%
+}
+
+
+\RequirePackage{titling}
+\RequirePackage{scrextend} % addmargin
+
+\setlength{\droptitle}{-1cm}
+\newlength{\margemesquerda}
+\setlength{\margemesquerda}{\ifmobile{3.2cm}{5.1cm}}
+\pretitle{
+	\begin{tikzpicture}[remember picture, overlay] 
+		\def\docdc@xshift{\ifmobile{3.2cm}{7cm}}
+		\def\docdc@yshift{\ifmobile{-0.6cm}{-3cm}}
+		\def\docdc@anchor{\ifmobile{north east}{east}}
+		\ifmobile{\docdc@drawlogo{height = 2.5cm}}{\docdc@drawlogo{width = 5.5cm}}
+	\end{tikzpicture}%
+	\begin{addmargin}[\margemesquerda]{0cm}
+	\begin{center}
+	\LARGE
+}
+\posttitle{
+	\end{center}
+	\end{addmargin}
+	\vspace{0.8em}
+}
+\preauthor{
+	\begin{addmargin}[\margemesquerda]{0cm}
+	\begin{center}
+	\large
+}
+\postauthor{
+	\end{center}
+	\end{addmargin}
+	\vspace{0.5em}
+}
+\predate{
+	\begin{addmargin}[\margemesquerda]{0cm}
+	\begin{center}
+	\large
+}
+\postdate{
+	\end{center}
+	\end{addmargin}
+	\vspace{2em}
+}
+
+
+\RequirePackage{tikz}
+%\let\maketitleorig\maketitle
+\newcommand{\docdc@drawlogo}[1]{
+	\node [
+			xshift = \docdc@xshift,
+			yshift = \docdc@yshift,
+			anchor = \docdc@anchor,
+		] at (current page.north west)
+		{\includegraphics[
+				#1,
+				origin=lB,
+				angle=\ifmobile{90}{0},
+			]{\docdc@logoimage}
+		};
+}
+%\renewcommand{\maketitle}{
+%	\maketitleorig%
+%}
+
+\endinput

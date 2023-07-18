@@ -1,0 +1,56 @@
+%
+% JM_TIKZ.STY
+% Personalização das opções do Tikz
+% Jander Moreira
+%
+
+%
+% Pacote Tikz
+%
+\usepackage{tikz}
+
+%
+% Bibliotecas
+%
+\usetikzlibrary{
+	positioning,
+	shadows,
+	arrows,
+	shapes.geometric
+}
+
+%
+% Estilos de desenho
+%
+\tikzset{
+	% Nó terminal em diagramas
+	terminal/.style={
+		rounded corners,
+		draw=blue!60!black,
+		top color=blue!20,
+		bottom color=blue!35,
+		text=black,
+		font = \ttfamily\bfseries,
+		align = center,
+		drop shadow={scale = 1.2, fill = black, opacity = 0.8},
+		node distance = 0.5cm,
+		minimum height = 1.6em
+		},
+	% Nó não-terminal em diagramas
+	nonterminal/.style={
+		draw=blue!60!black,
+		top color=yellow!20,
+		bottom color=yellow!35,
+		text=black!60!blue,
+		align= center,
+		drop shadow={scale = 1.2, fill = black, opacity = 0.6},
+		node distance = 0.5cm,
+		minimum height = 1.6em
+		},
+	% Seta simples
+	arrow/.style={
+		thick,
+		-latex
+		},
+}%\tikzset
+

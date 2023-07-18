@@ -1,0 +1,325 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FASTIS - Calendar
+% Jander Moreira, 2018
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\RequirePackage{translator}
+
+\RequirePackage{options}
+\options{
+	/fastis/.new family,
+	%
+	/fastis/year/.new value = \the\year, 
+	/fastis/month/.new value = 1, 
+	%
+	/fastis/text color/.new value = black,
+	%
+	%/fastis/show easter/.new toggle = true,
+}
+
+
+\RequirePackage{tikz}
+\usetikzlibrary{calendar, calc}
+\RequirePackage{xcolor}
+\colorlet{weekend}{red!60!black!70}
+
+\RequirePackage{kvsetkeys}
+
+
+\newcommand{\fastisset}[1]{
+	\options{/fastis, #1}
+}
+
+% Layout: calendar starts at sunday
+% Extracted from http://www.texample.net/tikz/examples/changing-the-default-calendar-layout/
+\tikzstyle{week list sunday}=[
+	execute before day scope={%
+	  \ifdate{day of month=1}{\ifdate{equals=\pgfcalendarbeginiso}{}{
+	      % On first of month, except when first date in calendar.
+	      \pgfmathsetlength{\pgf@y}{\tikz@lib@cal@month@yshift}%
+	      \pgftransformyshift{-\pgf@y}
+	    }}{}%
+	},
+	execute at begin day scope={%
+	  % Because for TikZ Monday is 0 and Sunday is 6,
+	  % we can't directly use \pgfcalendercurrentweekday,
+	  % but instead we define \c@pgf@counta (basically) as:
+	  % (\pgfcalendercurrentweekday + 1) % 7
+	  \pgfmathsetlength\pgf@x{\tikz@lib@cal@xshift}%
+	  \ifnum\pgfcalendarcurrentweekday=6
+	  \c@pgf@counta=0
+	  \else
+	  \c@pgf@counta=\pgfcalendarcurrentweekday
+	  \advance\c@pgf@counta by 1
+	  \fi
+	  \pgf@x=\c@pgf@counta\pgf@x
+	  % Shift to the right position for the day.
+	  \pgftransformxshift{\pgf@x}
+	},
+	execute after day scope={
+	  % Week is done, shift to the next line.
+	  \ifdate{Saturday}{
+	    \pgfmathsetlength{\pgf@y}{\tikz@lib@cal@yshift}%
+	    \pgftransformyshift{-\pgf@y}
+	  }{}%
+	},
+	% This should be defined, glancing from the source code.
+	tikz@lib@cal@width=7
+]
+
+%% Adapted from http://tex.stackexchange.com/a/10199/4771
+\tikzoption{day headings}{\tikzstyle{day heading}=[#1]}
+\tikzstyle{day heading}=[]
+\tikzstyle{day letter headings}=[
+	execute before day scope={
+		\ifdate{day of month = 1}{%
+			\pgfmathsetlength{\pgf@ya}{\tikz@lib@cal@yshift}%
+			\pgfmathsetlength\pgf@xa{\tikz@lib@cal@xshift}%
+			\pgftransformyshift{-\pgf@ya}
+				\foreach \d/\l in {0/Dom, 1/Seg, 2/Ter,
+					3/Qua, 4/Qui, 5/Sex, 6/Sáb}{
+				\pgf@xa=\d\pgf@xa%
+				\pgftransformxshift{\pgf@xa - 12pt}%
+				\pgftransformyshift{\pgf@ya}%
+				\node[day heading, anchor=base]{\l};%
+			}
+		}{}%
+	}%
+]
+
+%\RequirePackage{xparse}
+%%% Knuth's AoCP, vol 1, 2nd ed, pp 155--156
+%\ExplSyntaxOn
+%\int_new:N \l_easter_Y_int
+%\int_new:N \l_easter_G_int
+%\int_new:N \l_easter_C_int
+%\int_new:N \l_easter_X_int
+%\int_new:N \l_easter_Z_int
+%\int_new:N \l_easter_D_int
+%\int_new:N \l_easter_E_int
+%\int_new:N \l_easter_N_int
+%\int_new:N \l_easter_M_int
+%\int_new:N \l_easter_julian_day_int
+%
+%\cs_new:Nn \easter_sunday:n {
+%
+%  \int_set:Nn \l_easter_Y_int { #1 }
+%
+%  \int_set:Nn \l_easter_G_int {
+%    \int_mod:nn { \l_easter_Y_int } { 19 } + 1
+%  }
+%
+%  \int_set:Nn \l_easter_C_int {
+%    \int_div_truncate:nn { \l_easter_Y_int } { 100 } + 1
+%  }
+%
+%  \int_set:Nn \l_easter_X_int {
+%    \int_div_truncate:nn { 3 * \l_easter_C_int } { 4 } - 12
+%  }
+%
+%  \int_set:Nn \l_easter_Z_int {
+%    \int_div_truncate:nn { 8 * \l_easter_C_int + 5 } { 25 } - 5
+%  }
+%
+%  \int_set:Nn \l_easter_D_int {
+%    \int_div_truncate:nn { 5 * \l_easter_Y_int } { 4 } - \l_easter_X_int - 10
+%  }
+%
+%  \int_set:Nn \l_easter_E_int {
+%    \int_mod:nn { 11 * \l_easter_G_int + 20 + \l_easter_Z_int
+%      - \l_easter_X_int } { 30 }
+%  }
+%
+%  % \int_mod:nn behaves strangely.
+%  \int_compare:nNnT { \l_easter_E_int } < { 0 }
+%  {
+%    \int_add:Nn \l_easter_E_int { 30 }
+%  }
+%
+%  \int_compare:nNnTF { \l_easter_E_int } = { 25 }
+%  { % true
+%    \int_compare:nNnT { \l_easter_G_int } > { 11 }
+%    { % true
+%      \int_incr:N \l_easter_E_int
+%    }
+%  }
+%  { % false
+%    \int_compare:nNnT { \l_easter_E_int } = { 24 }
+%    { % true
+%      \int_incr:N \l_easter_E_int
+%    }
+%  }
+%
+%  \int_set:Nn \l_easter_N_int { 44 - \l_easter_E_int }
+%
+%  \int_compare:nNnT { \l_easter_N_int } < { 21 }
+%  { % true
+%    \int_add:Nn \l_easter_N_int { 30 }
+%  }
+%
+%  \int_add:Nn \l_easter_N_int {
+%    7 - \int_mod:nn { \l_easter_D_int + \l_easter_N_int } { 7 }
+%  }
+%
+%  \int_compare:nNnTF { \l_easter_N_int } > { 31 }
+%  { % true
+%    \int_sub:Nn \l_easter_N_int { 31 }
+%    \int_set:Nn \l_easter_M_int { 4 } % April
+%  }
+%  { % false
+%    \int_set:Nn \l_easter_M_int { 3 } % March
+%  }
+%
+%  \pgfcalendardatetojulian { \l_easter_Y_int -
+%     \l_easter_M_int - \l_easter_N_int
+%  } { \l_easter_julian_day_int }
+%
+%}
+%
+%\pgfkeys{/pgf/calendar/Easter/.default = 0}
+%\pgfkeys{/pgf/calendar/Easter/.code =
+%  {
+%    \easter_sunday:n { \pgfcalendarifdateyear }
+%    \int_compare:nNnT { \pgfcalendarifdatejulian } =  {\l_easter_julian_day_int + #1}
+%		{ \pgfcalendarmatchestrue }
+%  }
+%}
+%\ExplSyntaxOff
+
+\tikzset{
+	description/.style = {font = \footnotesize}
+}
+
+\global\newcount{\cal@descriptionrow}
+\newcommand{\printdescription}[3]{
+	\def\temp{#3}
+	\ifx\temp\empty
+	\else
+		\pgfmathsetlength\pgf@x{\tikz@lib@cal@xshift}%
+		\ifnum\pgfcalendarcurrentweekday=6
+			\c@pgf@counta=0
+		\else
+			\c@pgf@counta=\pgfcalendarcurrentweekday
+			\advance\c@pgf@counta by 1
+		\fi
+		\pgf@x=\c@pgf@counta\pgf@x
+		\pgfmathparse{int(\cal@descriptionrow + 1)}
+		\node[description,anchor = north west, text=#1, text width=2.5em, align = right]
+			at ($ (calendar start) + (9em, 1.7em - 1em * \cal@descriptionrow)$)
+			(this day) {#2 --\strut};
+		\node[description, right of= this day, anchor = west, xshift = -1em] {#3\strut};
+		\global\cal@descriptionrow=\pgfmathresult
+	\fi
+}
+
+% lists
+\newcommand{\fastis@createcode}[1]{
+	\pgfkeys{/tikz/#1code/.code =
+	  {
+			\path [draw = black, text=#1color, rounded corners = 2pt, fill=#1color!15]
+				(-0.25em, 1em) rectangle ++(-1.5em, -1.15em);
+			\printdescription{#1color}{\tikzdaytext}{##1}{}
+	  }
+	}
+}
+\newcommand{\fastis@createstyle}[1]{
+	\tikzstyle{\@@name} = [
+		#1color, 
+		#1code = ##1,
+	]
+}
+\newcommand{\fcreatedatelist}[2][black]{
+	% list for date and descriptions
+	\expandafter\def\csname fastis@#2@dates\endcsname{}
+	
+	% list for calendar 'if ()'s
+	\expandafter\def\csname fastis@#2@ifs\endcsname{}
+
+	% create code and style
+	\def\@@name{#2}
+	\colorlet{\@@name color}{#1}
+	\fastis@createcode{#2}
+	\fastis@createstyle{#2}
+}
+
+\newcommand{\fadddate}[3]{
+	\expandafter\ifx\csname fastis@#1@dates\endcsname\empty
+		\expandafter\def\csname fastis@#1@dates\endcsname{#2/#3}
+	\else
+		\expandafter\edef\csname fastis@#1@dates\endcsname{\expandafter\csname fastis@#1@dates\endcsname, #2/#3}
+	\fi
+	\expandafter\edef\csname fastis@#1@ifs\endcsname{\csname fastis@#1@ifs\endcsname if (equals = #2) [#1 = {#3}]}
+}
+
+\newcommand{\f@adddaterange}[4]{
+	\expandafter\ifx\csname fastis@#1@dates\endcsname\empty
+		\expandafter\def\csname fastis@#1@dates\endcsname{#2/#4}
+	\else
+		\expandafter\edef\csname fastis@#1@dates\endcsname{\expandafter\csname fastis@#1@dates\endcsname, #2/#4}
+	\fi
+	\expandafter\edef\csname fastis@#1@ifs\endcsname{\csname fastis@#1@ifs\endcsname if (between = #2 and #3) [#1 = {#4}]}
+}
+
+\newcommand{\fadddaterange}[4]{
+	\f@adddaterange{#1}{#2}{#3}{} % No text; only fills days with current color
+	\def\temp{#4}
+	\ifx\temp\empty
+	\else
+		\fadddate{#1}{#2}{#4 (início)}
+		\fadddate{#1}{#3}{#4 (final)}
+	\fi
+}
+
+
+% weekends as a list
+\xdef\fastis@weekends@ifs{if (weekend) [weekend]}
+
+\tikzstyle{every month} = [blue!70]
+
+\RequirePackage{trimspaces}
+
+\newcommand{\fprintmonth}[2][]{
+	% lists of dates
+	\xdef\fastis@ifs{}
+	\foreach \lifs in {#1}{
+		\trim@spaces@in\lifs
+		\ifx\lifs\empty
+		\else
+			\xdef\fastis@ifs{\fastis@ifs \csname fastis@\lifs @ifs\endcsname}
+		\fi
+	}
+	%
+	\options{/fastis/month = #2}%
+	%
+	\begin{tikzpicture}%[transform shape, scale = 1.1]
+		\sffamily
+		\calendar (cal) [
+				dates=\option{/fastis/year}-\option{/fastis/month}-1
+					to \option{/fastis/year}-\option{/fastis/month}-last,
+				week list sunday,
+				month label left vertical, 
+				day headings = {
+					font = \tiny, color = black,
+				},
+				day letter headings,
+				\option{/fastis/text color},
+				execute before day scope = {
+					\ifdate{day of month = 1}{%then
+						\coordinate (calendar start) at (0, 0);
+						\cal@descriptionrow=0
+					}{%else
+					}
+				},
+				execute at begin day scope = {
+					\draw[black, rounded corners = 2pt]
+					(-0.25em, 1em) rectangle ++(-1.5em, -1.15em);
+				},
+			]
+			%if (between = \option{/fastis/start date} and \option{/fastis/end date}) [black!80]
+			\fastis@ifs \fastis@weekends@ifs
+			;
+	\end{tikzpicture}
+}
+
+

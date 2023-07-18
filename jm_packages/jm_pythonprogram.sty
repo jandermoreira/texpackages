@@ -1,0 +1,46 @@
+%
+% JM_CPROGRAM.STY
+% Estilos para código de programas escritos em Python
+% Jander Moreira
+%  2017:		Proposta inicial
+%
+
+%
+% Pacotes
+%
+\usepackage{xcolor}
+
+%
+% Listagens
+%
+\usepackage{listings}
+\usepackage{lstautogobble}
+\lstset{
+	language = Python,
+	basicstyle = \footnotesize\ttfamily,
+	keywordstyle = \bfseries\color{black}\sffamily,
+	stringstyle = \color{green!30!black}\sffamily,
+	identifierstyle = \color{blue!50!black}\bfseries\sffamily,
+	commentstyle = \color{red!50!black}\bfseries\sffamily,
+	showstringspaces = false,
+	%showtabs = true,
+	tab = \rightarrowfill,
+	%showspaces = true,
+	tabsize = 4,
+	numbers = none,
+	postbreak=\space,
+	breakindent=5pt,
+	breaklines,
+	frame = single,
+	%frameround = tttt,
+	escapeinside = {/*@}{@*/},
+	autogobble,
+}
+
+%
+% Floats para programas
+%
+\usepackage{float}
+%\floatstyle{boxed}
+\newfloat{program}{thp}{lop}
+\floatname{program}{Programa}

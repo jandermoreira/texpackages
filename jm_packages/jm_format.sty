@@ -1,0 +1,257 @@
+%
+% Estilo: JM_FORMAT
+% Especificação de formatos usuais para documentos
+% Jander Moreira
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{jm_format}[2017/11/10 Format fine tunning and other stuff]
+
+%
+% Opções/parâmetros
+%
+\newif\if@linkcolors
+\@linkcolorsfalse
+\DeclareOption{linkcolors}{
+	\@linkcolorstrue
+}
+
+\newif\if@biblatex
+\@biblatexfalse
+\DeclareOption{biblatex}{
+	\@biblatextrue
+}
+
+\DeclareOption*{
+	\PackageWarning{jm_format}{Unknown option '\CurrentOption'. Ignored.}
+}
+
+\ProcessOptions\relax
+
+%
+% ABNT, sem "<" ">" nas URIs
+\PassOptionsToPackage{hyphens}{url}
+\RequirePackage{hyperref}
+\if@biblatex
+	\PackageWarning{jm_format}{Using BibLaTex}
+	\RequirePackage{csquotes}
+	\RequirePackage[
+		backend=biber,
+		style=abnt, 
+		ittitles, justify, indent, sccite, 
+		giveninits,
+		noslsn,
+		repeatfields,
+		%pretty,
+	]{biblatex}
+	\addbibresource{bib.bib}
+	
+	\newcommand{\citeonline}[2][]{\textcite[#1]{#2}}
+%	\let\bibliography=\relax
+%	\newcommand{\bibliography}[1]{\printbibliography}
+\else
+	\PackageWarning{jm_format}{The use of BibTex is going to be discontinued.}
+	\RequirePackage[alf]{abntex2cite}
+\fi
+\def\UrlRight{}
+\def\UrlLeft{}
+
+\RequirePackage[full]{textcomp}
+\newcommand{\cifrao}{\textdollaroldstyle}
+
+%\RequirePackage{enumitem}
+%\setlist{
+%	item = -0.3em,
+%	topsep = 0.25em,
+%}
+%\setenumerate{
+%	label = \alph*)
+%}
+
+\RequirePackage{xcolor}
+%\RequirePackage[hyphens]{url}
+\if@linkcolors
+	\hypersetup{
+		colorlinks = true,
+		urlcolor = black!50!blue,
+		linkcolor = blue!30!black,
+		citecolor = black!80,
+	}
+\else {}
+\fi
+
+\RequirePackage{algorithm}
+\renewcommand{\ALG@name}{Algoritmo}
+\renewcommand{\listalgorithmname}{Lista de \ALG@name s}
+
+%% Beamer
+%% Recursos visuais
+\RequirePackage{tcolorbox}
+\newtcolorbox{boxtop}[1][]{
+	title = #1,
+	width = \paperwidth,
+	colback = blue!50!black,
+	colbacktitle = blue,
+	coltitle = white,
+	fonttitle = \bfseries,
+	sharp corners,
+	bottomrule = 0pt,
+	toprule = 0pt,
+	leftrule = 0pt,
+	rightrule = 0pt,
+	titlerule = 0pt,
+	enlarge left by=-\beamer@leftmargin-\beamer@leftsidebar,
+	enlarge right by=-\beamer@rightmargin-\beamer@rightsidebar,
+}
+\newtcolorbox{boxalert}[1][]{
+	title = #1,
+	width = \paperwidth,
+	colback = red!90,
+	colbacktitle = blue,
+	coltitle = white,
+	fonttitle = \bfseries,
+	sharp corners,
+	bottomrule = 0pt,
+	toprule = 0pt,
+	leftrule = 0pt,
+	rightrule = 0pt,
+	titlerule = 0pt,
+	enlarge left by=-\beamer@leftmargin-\beamer@leftsidebar,
+	enlarge right by=-\beamer@rightmargin-\beamer@rightsidebar,
+}
+
+\newcommand{\sentenceHi}[2][white]{%
+	\begin{boxtop}
+		\centering\Huge%
+		\textcolor{#1}{\MakeUppercase{#2}\strut}
+	\end{boxtop}
+}
+
+\newcommand{\sentenceMid}[2][white]{%
+	\begin{boxtop}
+		\centering\Large%
+		\textcolor{#1}{\MakeUppercase{#2}\strut}
+	\end{boxtop}
+}
+\newcommand{\sentenceLow}[2][white]{%
+	\begin{boxtop}
+		\centering\large%
+		\textcolor{#1}{\MakeUppercase{#2}\strut}
+	\end{boxtop}
+}
+\newcommand{\sentenceAlert}[2][white]{%
+	\begin{boxalert}
+		\centering\LARGE%
+		\textcolor{#1}{\MakeUppercase{#2}\strut}
+	\end{boxalert}
+}
+
+%\renewcommand{\thetable}{\Roman{table}}
+
+\RequirePackage{graphicx}
+\graphicspath{
+	{./figuras/}
+	{/home/jander/figuras/}
+	{/home/jander/figuras/unsplash/}
+	{/home/jander/figuras/icons/}
+	{/home/jander/figuras/pixabay/}
+	{/home/jander/figuras/logos/}
+	{/home/jander/figuras/internet/}
+}
+
+\RequirePackage{amsmath}
+\DeclareMathOperator{\sen}{sen}
+\renewcommand{\sin}{\sen}
+\newcommand{\mathsl}[1]{\textit{\rmfamily #1}}
+
+\let\fmt@title\title
+\renewcommand{\title}[2][]{
+	% beamer has a short title, article doesn't
+	\@ifclassloaded{beamer}{\fmt@title[#1]{#2}}{\fmt@title{#2}}
+	\newcommand{\documenttitle}{#2}
+}
+
+\newcommand{\geracreditos}{
+	\begin{flushright}
+		Jander Moreira \\
+		{\tiny \url{http://www.dc.ufscar.br/~jander}} \\
+		{\tiny \href{mailto:jander@dc.ufscar.br?Subject=Contato}%
+				{\texttt{jander@dc.ufscar.br}}}
+			
+			\vspace{0.8cm}
+		Universidade Federal de São Carlos \\
+		{\tiny \url{http://www.ufscar.br}}
+	
+			\vspace{0.8cm}
+		Departamento de Computação \\
+		{\tiny \url{http://www.dc.ufscar.br}}
+		\vspace{0.5cm}
+	\end{flushright}
+}
+
+\newcommand{\creditos}{
+	%\section*{Créditos}
+	\begin{frame}[b]
+		\geracreditos
+		\note{\geracreditos}
+	\end{frame}
+}
+
+
+\RequirePackage{tikz}
+% para animação em desenhos
+\usetikzlibrary{tikzmark, calc, arrows, mindmap, trees, positioning}
+\tikzset{
+	invisible/.style={opacity=0},
+	visible on/.style={alt={#1{}{invisible}}},
+	alt/.code args={<#1>#2#3}{%
+		\alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}} % \pgfkeysalso doesn't change the path
+	},
+}
+\newcommand\DrawBox[3][]{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \draw[overlay,fill=gray!30,#1] 
+    ([xshift=-0.1em,yshift=2.1ex]{pic cs:#2}) 
+    rectangle 
+    ([xshift=0.5em, yshift=-0.7ex]pic cs:#3);
+  \end{tikzpicture}%
+}
+
+\RequirePackage{icomma}
+\RequirePackage[all]{nowidow}
+
+%
+% Contorno de palavras
+\RequirePackage[outline]{contour}
+\RequirePackage{xparse}
+\ExplSyntaxOn
+\newcommand{\contorno}[1]{%
+	\hskip-0.8ex%
+	\clist_map_inline:nn{#1}{%
+		\hskip0.8ex%
+		\contour{structure.bg!90}{\color{structure.fg}##1\strut}%
+	}%
+}
+\newcommand{\Contorno}[1]{%
+	\hskip-0.8ex%
+	\clist_map_inline:nn{#1}{%
+		\hskip0.8ex%
+		\contour{structure.bg!90}{\color{structure.fg}\textbf{##1}\strut}%
+	}%
+}
+\ExplSyntaxOff
+
+%%%%%%%%%%%%%%%%%%%%%%5
+% Utilitarios
+
+\newcommand{\emedicao}{
+	\begin{tcolorbox}[title = \textbf{Alerta}, colback = red!80]
+		\centering%\raggedright
+		\Huge\textbf{\color{white}\sffamily Documento em edição\ldots}
+	\end{tcolorbox}
+}
+
+
+
+% Fim
+%
+\endinput

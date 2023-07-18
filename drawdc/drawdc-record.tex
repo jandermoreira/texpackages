@@ -1,0 +1,379 @@
+%
+% DRAWDC: record
+% This file is loaded by ../drawdc.sty
+%
+
+\RequirePackage{xparse}
+\input{binhex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Parameters
+%
+\pgfkeys{
+	/drawdc/record/.cd,
+	name/.store in = \@dd@record@chainname,
+	%
+	scale/.store in = \dd@record@lengthscale,
+	field font/.store in = \dd@record@fieldfont,
+	%
+	length/.store in = \dd@record@recordbytelength, % in bytes
+	hide record border/.code = {\dd@record@recordborderfalse},
+	show record border/.code = {\dd@record@recordbordertrue},
+	%
+	hide field border/.code = {\dd@record@fieldborderfalse},
+	show field border/.code = {\dd@record@fieldbordertrue},
+	%
+	byte length/.code = {\setlength{\dd@record@bytelength}{#1}},
+	terminator/.is if = dd@record@useterminator,
+	prefix/.is if = dd@record@useprefix,
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Variables
+%
+
+\def\fieldterminator{\ddbyte{00}}
+\def\recordterminator{\ddbyte{01}}
+\def\fieldfillbyte{\ddbyte{FF}}
+\def\recordfillbyte{\ddbyte{FE}}
+
+\newlength{\dd@record@bytelength}
+\newif\ifdd@record@recordborder
+\newif\ifdd@record@fieldborder
+\newif\ifdd@record@useprefix
+\newif\ifdd@record@useterminator
+
+%% defaults
+\def\@dd@record@chainname{record}
+\def\dd@record@recordbytelength{0}
+\setlength{\dd@record@bytelength}{1.2ex}
+\def\dd@record@lengthscale{1}
+\def\dd@record@fieldfont{\fontfamily{cmtt}\selectfont}
+\dd@record@recordbordertrue
+\dd@record@fieldbordertrue
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Drawing stuff
+%
+\usetikzlibrary{chains, calc}
+
+\newcounter{recordoffset}
+
+
+\tikzset{
+	byte/.style = {
+		align = center,
+		font = \dd@record@fieldfont,
+		text width = 2.2em,
+		text depth = 0.75em,
+		inner sep = 0pt,
+		outer sep = 0pt,
+		text height = 1.6em,
+		minimum height = 2em,
+		draw,
+	},
+	compact byte/.style = {
+		text width = 0.58em,
+		text height = 0.7em,
+		text depth = 0.1em,
+		minimum height = 1.6em, 
+		draw = none,
+		},
+	field space/.style = {
+		text width = 1pt,
+		inner sep = 0pt,
+		outer sep = 0pt,
+		on chain,
+		draw = none,
+	},
+	record text/.style = {
+		font = \dd@record@fieldfont,
+	},
+	record/.style = {
+		draw,
+		minimum height = 0.75cm,
+		inner sep = 0pt,
+		outer sep = 0pt,
+		anchor = west,
+		on chain,
+		record text,
+	},
+	number/.style = {
+		font = \tiny,
+		text depth = 0.25ex,
+		inner sep = 2pt,
+		outer sep = 0pt,
+	},
+}
+
+\newlength{\dd@record@recordlength}
+\newlength{\dd@record@fieldtextlength}
+\newlength{\dd@record@fieldlength}
+\newcommand{\dd@record@drawrecord}[2]{
+	% #1: label
+	% #2: length
+	\pgfmathparse{\dd@record@lengthscale * \dd@record@bytelength * #2 + 1ex}
+	\edef\dd@len{\pgfmathresult pt}
+	\node[
+		record,
+		text width = \dd@len,
+	] (current node) {};
+	\settowidth{\dd@record@fieldtextlength}
+		{\pgfinterruptpicture\dd@record@fieldfont#1\endpgfinterruptpicture}
+	\ifdim\dd@record@fieldtextlength>\dd@len\relax
+		\node[record text, yshift = 1.2cm] at (current node) (label) {#1\strut};
+		\draw[latex-] (current node.center) -- (label);
+	\else
+		\node[record text] at (current node) {#1\strut};
+	\fi
+	\ifnum#2=1
+		\node[number, anchor = north]
+			at (current node.south) {\therecordoffset};
+	\else
+		\edef\@first{\therecordoffset}
+		\addtocounter{recordoffset}{-1}
+		\addtocounter{recordoffset}{#2}
+		\edef\@second{\therecordoffset}
+		\ifnum#2=2
+			\node[number, anchor = north]
+					at (current node.south) {\@first-\@second};
+		\else
+			\node[number, anchor = north west]
+				at (current node.south west) {\@first};
+			\node[number, anchor = north east]
+				at (current node.south east) {\@second};
+		\fi
+	\fi
+	\addtocounter{recordoffset}{1}
+}
+
+\newcommand{\dd@record@drawfieldhelper}[1]{
+	\node[byte, on chain] {#1};
+}
+
+\newcounter{ddbytecounter}
+\newcommand{\dd@record@bytecounthelper}[1]{%
+	\stepcounter{ddbytecounter}%
+}
+
+%\ExplSyntaxOn
+\NewDocumentCommand{\dd@record@drawfield}{ 
+	> { \SplitList{} } m
+}{
+	\ProcessList{#1}{\dd@record@drawfieldhelper}
+	\ifdd@record@fieldborder
+		\draw (\@dd@firstfieldbyte.north west) rectangle
+			(\tikzchaincurrent.south east);
+	\fi
+	\pgfmathsetmacro\@dd@last{int(\tikzchaincount + 1)}
+	\global\edef\@dd@firstfieldbyte{\@dd@record@chainname-\@dd@last}
+}
+
+\NewDocumentCommand{\dd@record@bytecount}{ 
+	> { \SplitList{} } m
+}{
+	\setcounter{ddbytecounter}{0}
+	\ProcessList{#1}{\dd@record@bytecounthelper}
+}
+%\ExplSyntaxOff
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Commands
+%
+
+\newcounter{fieldspacecounter}
+\NewDocumentEnvironment{ddrecord}{oo}{
+	% #1: record options
+	% #2: tikz options
+	\begingroup
+	% defaults
+	\global\edef\@dd@record@chainname{record}
+	\def\dd@record@recordbytelength{0}
+	
+	% code
+	\IfNoValueF{#1}{\ddrecordset{#1}}
+	\ddtikzset{%
+		start chain = record going right,
+		node distance = 0pt,
+	}
+	\IfNoValueF{#2}{\ddtikzset{#2}}
+	\global\edef\@dd@record@chainname{\@dd@record@chainname}
+	\global\edef\@dd@firstbyte{\@dd@record@chainname-1} % of the record
+	\global\edef\@dd@firstfieldbyte{\@dd@record@chainname-1} % of each field
+	\setcounter{fieldspacecounter}{0}
+	\ifdd@record@useprefix
+		\begingroup
+		\tikzset{byte/.append style = {compact byte}}
+		\ddrecordset{hide field border}
+		\dd@record@bytehorizontalfalse
+		\node[on chain, byte, draw = none] {};
+		\node[on chain, byte, draw = none] {};
+		\endgroup
+		\global\edef\@dd@firstfieldbyte{\@dd@record@chainname-3}
+	\fi
+}{
+	\pgfmathsetmacro\@remain{int(\dd@record@recordbytelength -
+		\tikzchaincount + \thefieldspacecounter)}
+	\ifnum\@remain>0\relax
+		\begingroup
+		\tikzset{byte/.append style = {compact byte}}
+		\ddrecordset{hide field border}
+		\dd@record@bytehorizontalfalse
+		\ddfieldfixed*{}{\@remain}[\recordfillbyte]
+		\endgroup
+	\fi
+	\ifdd@record@useterminator
+		\begingroup
+		\tikzset{byte/.append style = {compact byte}}
+		\ddrecordset{hide field border}
+		\dd@record@bytehorizontalfalse
+		\node[byte, on chain] {\recordterminator};
+		\endgroup
+	\fi		
+	\ifdd@record@recordborder
+		\draw ($(\@dd@firstbyte.north west) + (-1pt, 1pt)$) rectangle
+			($(\tikzchaincurrent.south east) + (1pt, -1pt)$);
+	\fi
+	\ifdd@record@useprefix
+		\begingroup
+		\tikzset{byte/.append style = {compact byte}}
+		\ddrecordset{hide field border}
+		\dd@record@bytehorizontalfalse
+		\pgfmathsetmacro\@firsthex{
+			int((\tikzchaincount - \thefieldspacecounter)/256)}
+		\pgfmathsetmacro\@secondhex{
+			int(mod(\tikzchaincount - \thefieldspacecounter, 256))}
+		\def\@firstbyte{\ddbyte{\nhex{2}{\@firsthex}}}
+		\def\@secondbyte{\ddbyte{\nhex{2}{\@secondhex}}}
+		\node[byte] at (\@dd@record@chainname-1) {\@firstbyte};
+		\node[byte] at (\@dd@record@chainname-2) {\@secondbyte};
+		\endgroup
+	\fi	
+	\endgroup
+}
+
+\NewDocumentEnvironment{ddrecord*}{O{}O{}}{
+	\begin{ddrecord}[hide record border, #1][#2]
+}{
+	\end{ddrecord}
+}
+
+\newif\ifdd@record@bytehorizontal
+\dd@record@bytehorizontaltrue
+\newcommand{\ddbyte}[1]{%
+	\ifdd@record@bytehorizontal%
+		\raisebox{0.1em}{%
+			\scalebox{0.7}[0.7]{\texttt{0x#1}}}%
+	\else%
+		\raisebox{-0.15em}{\rotatebox{90}{%
+			\scalebox{0.45}[0.5]{\texttt{0x#1}}}}%
+	\fi%
+}
+
+\NewDocumentCommand{\ddfieldspace}{s}{
+	\node[field space] {};
+	\pgfmathsetmacro\@dd@last{int(\tikzchaincount + 1)}
+	\global\edef\@dd@firstfieldbyte{\@dd@record@chainname-\@dd@last}
+	\IfBooleanF{#1}{\addtocounter{fieldspacecounter}{1}}
+}
+
+\newcommand{\ddfield}[1]{{%
+		\tikzset{byte/.append style = {draw}}
+		\dd@record@drawfield{#1}
+}}
+
+\NewDocumentCommand{\ddfieldterminator}{smo}{%
+	% #1: star (*)?
+	% #2: contents
+	% #3: terminator
+	\begingroup
+	\IfBooleanT{#1}{
+		\tikzset{byte/.append style = {compact byte}}
+		\dd@record@bytehorizontalfalse
+	}
+	
+	\IfNoValueTF{#3}{
+		\dd@record@drawfield{#2\fieldterminator}
+	}{
+		\def\@term{#3}
+		\dd@record@drawfield{#2\@term}
+	}
+	\endgroup
+}
+
+\NewDocumentCommand{\ddfieldprefixed}{smo}{%
+	% #1: star (*)?
+	% #2: contents
+	% #3: prefix
+	\begingroup
+	\IfBooleanT{#1}{
+		\tikzset{byte/.append style = {compact byte}}
+		\dd@record@bytehorizontalfalse
+	}
+	\IfNoValueTF{#3}{
+		\dd@record@bytecount{#2}
+		\pgfmathsetmacro\@firsthex{int(\theddbytecounter/256)}
+		\pgfmathsetmacro\@secondhex{int(mod(\theddbytecounter, 256))}
+		\def\@firstbyte{\ddbyte{\nhex{2}{\@firsthex}}}
+		\def\@secondbyte{\ddbyte{\nhex{2}{\@secondhex}}}
+		\dd@record@drawfield{\@firstbyte\@secondbyte#2}
+	}{
+		\dd@record@drawfield{#3#2}
+	}
+	\endgroup
+}
+
+\NewDocumentCommand{\ddfieldfixed}{smmo}{%
+	% #1: star (*)?
+	% #2: contents
+	% #3: length
+	% #4: filling byte
+	\begingroup
+	\IfBooleanT{#1}{
+		\tikzset{byte/.append style = {compact byte}}
+		\dd@record@bytehorizontalfalse
+	}
+	\IfNoValueTF{#4}{
+		\def\@fill{\fieldfillbyte}
+	}{
+		\def\@fill{#4}
+	}
+	\dd@record@bytecount{#2}
+%	\pgfmathsetmacro\@remain{#3 - \theddbytecounter}
+	\def\@text{#2}
+	\@whilenum#3>\value{ddbytecounter}\do{
+		\g@addto@macro\@text{\@fill}
+		\stepcounter{ddbytecounter}
+	}
+	\expandafter\dd@record@drawfield\expandafter{\@text}
+	\endgroup
+}
+
+\newcommand{\ddrecordstructure}[2][]{{%
+	\pgfkeys{
+		/drawdc/record/.cd,
+		#1
+	}
+	\def\recordlist{#2}
+	{
+		\ddtikzset{%
+			start chain = records going right,
+			node distance = 0pt,
+		}
+		\setcounter{recordoffset}{0}
+
+		\foreach \rlabel/\rlen[count = \n] in \recordlist{
+			\dd@record@drawrecord{\rlabel}{\rlen}
+		}
+	}
+}}
+
+\newcommand{\ddrecordset}[1]{%
+	\pgfkeys{
+		/drawdc/record/.cd,
+		#1,
+	}%
+}
+
+%% EOF

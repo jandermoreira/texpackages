@@ -1,0 +1,31 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{jm_symbols}[2018/06/20 Some (repeating) symbols]
+
+\RequirePackage{tikz}
+
+\usetikzlibrary{snakes}
+\newlength{\symb@wavelength}
+\newcommand{\Waves}[1][1]{%
+	\setlength{\symb@wavelength}{0.9\baselineskip}%
+	\setlength{\pgfsnakesegmentlength}{0.1\symb@wavelength}%
+	\begin{tikzpicture}[baseline]
+		\foreach \x in {1, ..., #1}{
+			\draw[fill = black!10]
+				(0.7\symb@wavelength * \x + 0.25\symb@wavelength, 0.25\symb@wavelength) circle (0.32\symb@wavelength);
+			\draw[snake=expanding waves, thin]
+				(0.7\symb@wavelength * \x + 0.02\symb@wavelength, 0.02\symb@wavelength) -- +(0.4\symb@wavelength, 0.4\symb@wavelength);
+		}
+	\end{tikzpicture}\strut
+}
+
+\usetikzlibrary{shapes.geometric}
+\newcommand{\Stars}[1][1]{%
+	\begin{tikzpicture}[scale=0.35, transform shape]
+		\foreach \s in {1, ..., #1}
+			\draw (0.95*\s, 0) node[star, star points=5, star point ratio=2.25,
+				draw, fill=gray] {};
+	\end{tikzpicture}%
+}
+
+
+\endinput

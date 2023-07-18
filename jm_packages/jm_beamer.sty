@@ -1,0 +1,494 @@
+%
+%  JM_BEAMER.STY
+% Personalização da apresentação do beamer
+% Jander Moreira
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{jm_beamer}[2018/05/22 Beamer personalization by Jander]
+
+%
+% Pacotes
+%
+\RequirePackage{multicol}
+\RequirePackage{kpfonts}
+\mathversion{rm}
+\usefonttheme[onlymath]{serif}
+\RequirePackage{xcolor}
+\RequirePackage{hyperref}
+
+% Listas
+\newcounter{bm@listdepth}
+\newlength{\bm@itemsep}
+%! formatter = off
+\NewDocumentCommand{\bm@setitemsep}{}{%
+    \ifbm@innotes
+        \ifcase\thebm@listdepth
+        \or
+            \setlength{\itemsep}{-0.4em}
+        \or
+            \setlength{\itemsep}{-0.2em}
+        \or
+            \setlength{\itemsep}{-0.2pt}
+        \else
+            \setlength{\itemsep}{0pt}
+        \fi
+%        \topsep=-1em
+        \parskip=0.25em
+    \fi
+}
+%! formatter = on
+\let\bm@itemizeoriginal\itemize
+\let\bm@enditemizeoriginal\enditemize
+\renewenvironment{itemize}{%
+    \stepcounter{bm@listdepth}
+    \bm@itemizeoriginal
+    \bm@setitemsep
+    }{%
+    \bm@enditemizeoriginal
+    \addtocounter{bm@listdepth}{-1}
+    \bm@setitemsep
+}
+\let\bm@enumerateoriginal\enumerate
+\let\bm@endenumerateoriginal\endenumerate
+\renewenvironment{enumerate}{%
+    \stepcounter{bm@listdepth}
+    \bm@enumerateoriginal
+    \bm@setitemsep
+    }{%
+    \bm@endenumerateoriginal
+    \addtocounter{bm@listdepth}{-1}
+    \bm@setitemsep
+}
+
+\let\bm@note\note
+\newif\ifbm@innotes
+\bm@innotesfalse
+\RenewDocumentCommand{\note}{ +m }{%
+    \bm@note{%
+        \bm@innotestrue%
+        #1%
+        \bm@innotesfalse%
+    }
+}
+
+%\RequirePackage{enumitem}
+%\setlist{
+%    noitemsep,
+%    topsep = 0pt,
+%    after = \vspace{0.5em},
+%}
+
+%
+% Opções/parâmetros
+%
+\newif\if@showdisclaimer
+\@showdisclaimertrue
+\DeclareOption{nodisclaimer}{
+    \@showdisclaimerfalse
+}
+\newif\if@twocolumncontents
+\@twocolumncontentsfalse
+\DeclareOption{twocolumncontents}{
+    \@twocolumncontentstrue
+}
+\DeclareOption*{
+    \PackageWarning{jm_beamer}{Unknown ‘\CurrentOption’}
+}
+\ProcessOptions\relax
+
+%
+% Opções
+%
+\RequirePackage{options}
+
+
+%
+% Configurações de estilo
+%
+
+% Destaque em cor azul nas transições de eslaides
+\newcommand{\highlight}[1]{\hspace{0.001pt}{\color<2->[rgb]{0,0,1}#1}}
+\newcommand{\disclaimer}{
+    \begin{tiny}
+        \begin{flushright}
+            \textit{Este material é complementar, sendo \\
+            apenas uma apresentação de aula e não\\
+            consistindo em material suficiente para estudo.}
+        \end{flushright}
+    \end{tiny}
+}
+
+% Início e fim da apresentação
+\newcommand{\twocolumntoc}{
+    \begin{multicols}{2}
+        \raggedcolumns
+        \tableofcontents[hideallsubsections]
+    \end{multicols}
+}
+\newcommand{\addpreamble}{
+    \begin{frame}
+        \titlepage
+
+        \note{
+            \titlepage
+
+            \vfill
+            \if@showdisclaimer
+            \disclaimer
+            \fi
+        }
+    \end{frame}
+
+    \begin{frame}
+        \if@twocolumncontents
+        \twocolumntoc
+        \else
+        \tableofcontents
+        \fi
+
+        \note{\textbf{Agenda da apresentação}\\\tableofcontents\vfill}
+    \end{frame}
+}
+
+% TEM UM \creditos !!!
+% \newcommand{\credits}{%
+%     \Large
+%     Jander Moreira \\
+%     \mbox{\scriptsize\url{http://www.dc.ufscar.br/~jander}}\\
+%     \mbox{\scriptsize\href{mailto:jander@ufscar.br?Subject=Contato}%
+%     {\texttt{jander@ufscar.br}}}
+%
+%     \vspace{0.8cm}
+%     Departamento de Computação \\
+%     {\scriptsize\url{http://www.dc.ufscar.br}}
+%     \vspace{0.5cm}
+%
+%     \vspace{0.8cm}
+%     Universidade Federal de São Carlos \\
+%     {\scriptsize\url{http://www.ufscar.br}}
+% }
+% \newcommand{\addcredits}{
+%     \section*{Créditos}
+%     \begin{frame}[b]
+%         \begin{flushright}
+%             \credits
+%         \end{flushright}
+%         \note{\credits}
+%     \end{frame}
+% }
+
+% Geração automática de página de título para cada seção
+\newcommand{\fmt@symbol}{$\equiv\mid$\hspace{1ex}}
+\newlength{\fmt@symbolwidth}
+\settowidth{\fmt@symbolwidth}{\fmt@symbol}
+\AtBeginSection[]{%
+    \begin{frame}
+        <handout:0>[c]
+        \centering
+        \begingroup%
+        \Large%
+        \fmt@symbol\parbox[t]{\dimexpr (0.8\linewidth-\fmt@symbolwidth)}
+        {\raggedright\noindent\insertsection\strut}\strut
+        \endgroup%
+        \note{
+            \large Seção:\\\textbf{\insertsection}
+
+            \vspace{0.5em}
+            \begingroup
+            \begin{minipage}[t]{\linewidth}
+                \setlength{\columnseprule}{0.4pt}
+                \begin{multicols*}{2}%
+                    \raggedcolumns%
+                    \scriptsize%
+                    \vspace*{-1.5\baselineskip}
+                    \tableofcontents[currentsection, hideallsubsections]
+                    \vfill\null
+                \end{multicols*}
+            \end{minipage}
+            \endgroup
+        }
+    \end{frame}%
+}
+
+%\newcommand{\fullpicture}[2][]{%
+%	\begin{tikzpicture}[remember picture, overlay]
+%		\node at (current page.center)%
+%			{\includegraphics[width=\paperwidth, height=\paperheight, #1]{#2}};
+%	\end{tikzpicture}
+%}
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{skins}
+\options{
+    /jm/.new family,
+%
+%/jm/shape/.new list = {circle, rectangle, ellipse},
+    /jm/transparency/.new value = 0.3,
+%
+    /jm/xshift/.new length = -0.5\paperwidth+0.40\paperheight,
+    /jm/yshift/.new length = 0pt,
+%
+% todo: tentar compatibilizar!
+    /jm/decodearray/.new value = {0 1 0 1 0 1},
+}
+\newcommand{\fullpicture}[2][]{%
+    \begin{tikzpicture}[remember picture, overlay]
+        \node[anchor=center] at (current page.center)%
+            {\includegraphics[width=\paperwidth, height=\paperheight, #1]{#2}};
+    \end{tikzpicture}
+}
+
+\newcommand{\jm@transparency}{0.5}
+
+\newcommand{\fullpicturecropped}[2][]{{%
+    \options{/jm, #1}%
+    %	\def\usedecodearray{\option{/jm/decodearray}}
+    %	\ifx\usedecodearray\empty%
+    %	\else
+    %		\renewcommand{\jmda}{\option{/jm/decodearray}}
+    %	\fi
+
+    \begin{tikzpicture}[remember picture, overlay]
+        \path [
+				fill overzoom image* = {decodearray =
+            {\option{/jm/decodearray}}}{#2},
+        rounded corners = 0.7cm,
+        ]
+        ($(current page.center) + (\option{/jm/xshift},
+        \option{/jm/yshift})$) circle (0.40\paperheight);
+
+        \fill [
+            fill = structure.bg,
+            opacity = \option{/jm/transparency}, % nome invertido
+        ]
+        ($(current page.center) + (\option{/jm/xshift},
+        \option{/jm/yshift})$) circle (0.40\paperheight);
+
+        \draw[fill = structure.bg, opacity = \jm@transparency]
+        ($(current page.center) + (\option{/jm/xshift},
+        \option{/jm/yshift})$) circle (0.40\paperheight);
+
+        \foreach \x[evaluate={\opx=ln(\x)/ln(10);}] in {10, 9.5, ..., 1}{
+            \draw [
+                color = structure.bg,
+                line cap = round,
+                line width = \x*1.2pt,
+                opacity = 1-\opx,
+                rounded corners = 0.7cm,
+            ]
+            ($(current page.center) + (\option{/jm/xshift},
+            \option{/jm/yshift})$) circle (0.40\paperheight);
+        }
+    \end{tikzpicture}%
+}}
+
+\def\blob#1#2{
+    (#2) +($(0:#1*2+#1*rnd)$)
+    \foreach \a in {20, 30, ..., 350} {  -- +($(\a: #1*2+#1*rnd)$) } -- cycle
+}
+\def\mypath{
+%	\blob{0.8}{$(current page.center) + (-1, 0)$}
+    \blob{1.2}{$(current page.center) + (-1.4, 0.5)$}
+    \blob{0.55}{$(current page.center) + (-3.7, -2)$}
+    \blob{0.3}{$(current page.center) + (3.2, -2.5)$}
+    \foreach \a in {0,40,...,350} {
+        let \p1 = (\a+2.5*rnd:2*rnd), \n1 = {0.3*rnd}
+        in (\p1)
+        [xshift = 1cm, yshift = 1.5cm]circle (\n1)
+    }
+    \foreach \a in {0,20,...,350} {
+        let \p1 = (\a+4*rnd:2*rnd), \n1 = {0.15*rnd}
+        in (\p1)
+        [xshift = 9cm, yshift = -2cm]circle (\n1)
+    }
+%	\foreach \d in {1, ..., 20}{
+%		($(current page.center) + (9*rnd - 4.5, 7*rnd - 3)$) circle ($(1mm *
+%    rnd)$)
+}
+\newcommand{\fx}[2][]{{%
+    \options{/jm, #1}%
+    \begin{tikzpicture}[remember picture, overlay]
+        \pgfmathsetseed{1}
+        \path [ %draw = white, very thick,
+        fill overzoom image* = {decodearray = {\option{/jm/decodearray}}}{#2},
+        rounded corners = 0.7mm,
+        ]
+        \mypath;
+        \pgfmathsetseed{1}
+        \fill [
+            fill = black,
+            opacity = \option{/jm/transparency}, % nome invertido, pois é
+            sobreposta
+            rounded corners = 0.7mm,
+        ]
+        \mypath;
+        %		\foreach \x[evaluate={\opx=ln(\x)/ln(10);}] in {10, 9.5, ...,
+        %1}{
+        %			\draw [
+        %				color = structure.bg,
+        %				line cap = round,
+        %				line width = \x*1.2pt,
+        %				opacity = 1-\opx,
+        %				rounded corners = 1cm,
+        %			]
+        %			\mypath;
+        %		}
+    \end{tikzpicture}%
+
+}}
+
+\newcommand{\background}[2][]{
+% #1: parameters to tikzpicture
+%	\tikzset{/tikz/.cd, }
+    \begin{tikzpicture}[remember picture, overlay, baseline,
+        transform shape, scale = 12, opacity = 0.8, #1]
+        \node at (current page.center) {#2};
+    \end{tikzpicture}
+}
+
+\newenvironment{direita}[1][0.6]{%
+    \begin{columns}
+        \begin{column}{\dimexpr\linewidth-#1\linewidth\relax}
+            \null
+        \end{column}
+        \begin{column}{\dimexpr#1\linewidth\relax}%
+        }
+        {%
+        \end{column}%
+    \end{columns}%
+}
+
+% https://tex.stackexchange.com/questions/160825/modifying-margins-for-one-slide
+\newcommand\Wider[2][3em]{%
+    \makebox[\linewidth][c]{%
+        \begin{minipage}{\dimexpr\textwidth+#1\relax}
+            #2
+        \end{minipage}%
+    }%
+}
+
+\RequirePackage{tcolorbox}
+\newtcolorbox{boxtop}[1][]{
+    title = #1,
+    width = \paperwidth,
+    colback = blue!50!black,
+    colbacktitle = blue,
+    coltitle = white,
+    fonttitle = \bfseries,
+    sharp corners,
+    bottomrule = 0pt,
+    toprule = 0pt,
+    leftrule = 0pt,
+    rightrule = 0pt,
+    titlerule = 0pt,
+    enlarge left by=-\beamer@leftmargin-\beamer@leftsidebar,
+    enlarge right by=-\beamer@rightmargin-\beamer@rightsidebar,
+}
+\newtcolorbox{boxalert}[1][]{
+    title = #1,
+    width = \paperwidth,
+    colback = red!90,
+    colbacktitle = blue,
+    coltitle = white,
+    fonttitle = \bfseries,
+    sharp corners,
+    bottomrule = 0pt,
+    toprule = 0pt,
+    leftrule = 0pt,
+    rightrule = 0pt,
+    titlerule = 0pt,
+    enlarge left by=-\beamer@leftmargin-\beamer@leftsidebar,
+    enlarge right by=-\beamer@rightmargin-\beamer@rightsidebar,
+}
+
+\newcommand{\sentenceHi}[2][white]{%
+    \begin{boxtop}
+        \centering\Huge%
+        \textcolor{#1}{\MakeUppercase{#2}\strut}
+    \end{boxtop}
+}
+
+\newcommand{\sentenceMid}[2][white]{%
+    \begin{boxtop}
+        \centering\Large%
+        \textcolor{#1}{\MakeUppercase{#2}\strut}
+    \end{boxtop}
+}
+\newcommand{\sentenceLow}[2][white]{%
+    \begin{boxtop}
+        \centering\large%
+        \textcolor{#1}{\MakeUppercase{#2}\strut}
+    \end{boxtop}
+}
+\newcommand{\sentenceAlert}[2][white]{%
+    \begin{boxalert}
+        \centering\LARGE%
+        \textcolor{#1}{\MakeUppercase{#2}\strut}
+    \end{boxalert}
+}
+
+
+\newcommand{\geracreditos}{
+    \begin{flushright}
+        Jander Moreira \\
+        {\tiny \url{http://www.dc.ufscar.br/~jander}} \\
+        {\tiny \href{mailto:jander@ufscar.br?Subject=Contato}%
+        {\texttt{jander@ufscar.br}}}
+
+        \vspace{0.8cm}
+        Departamento de Computação \\
+        {\tiny \url{http://www.dc.ufscar.br}}
+        \vspace{0.5cm}
+
+        \vspace{0.8cm}
+        Universidade Federal de São Carlos \\
+        {\tiny \url{http://www.ufscar.br}}
+    \end{flushright}
+}
+
+\newcommand{\creditos}{
+    \section*{Créditos}
+    \begin{frame}[b]
+        \geracreditos
+        \note{\geracreditos}
+    \end{frame}
+}
+
+
+\RequirePackage{tikz}
+% para animação em figuras
+\usetikzlibrary{tikzmark, calc, arrows, mindmap, trees, positioning}
+\tikzset{
+    invisible/.style = {opacity = 0},
+    visible on/.style = {alt = {#1{}{invisible}}},
+    %! formatter = off
+    alt/.code args={<#1>#2#3}{
+        \alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}} % \pgfkeysalso doesn't change the path
+    },
+    %! formatter = on
+}
+\newcommand\DrawBox[3][]{%
+    \begin{tikzpicture}[remember picture,overlay]
+        \draw[overlay,fill=gray!30,#1] ([xshift=-0.1em,yshift=2.1ex]{pic cs:#2}) rectangle ([xshift=0.5em, yshift=-0.7ex]pic cs:#3);
+    \end{tikzpicture}%
+}
+
+
+%
+% Contorno de palavras
+\RequirePackage[outline]{contour}
+\newcommand{\Contour}[1]{%
+    \expandafter\ContourWords\expandafter{#1}%
+}
+\newcommand{\ContourWords}[1]{\mywords#1 \relax\relax}
+\def\mywords#1 #2\relax{%
+    \contour{structure.bg!90}{\textbf{\textcolor{structure.fg}{#1}}\strut}%
+    \ifx\relax#2\else\ \mywords#2\relax\fi%
+}
+
+
+%
+% Fim
+%
+\endinput

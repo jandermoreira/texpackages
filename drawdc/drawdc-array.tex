@@ -1,0 +1,245 @@
+%
+% DRAWDC: array
+% This file is loaded by ../drawdc.sty
+%
+
+\RequirePackage{xcolor}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Variables
+%
+
+% ** array properties
+\def\drawdc@array@numberofcells{8}
+\newlength{\drawdc@array@x}\setlength{\drawdc@array@x}{0cm}
+\newlength{\drawdc@array@y}\setlength{\drawdc@array@y}{0cm}
+\newlength{\drawdc@array@bordersep}\setlength{\drawdc@array@bordersep}{0.05cm}
+\def\drawdc@array@axis{horizontal}
+
+% ** cell properties
+\def\drawdc@array@cellfont{\normalsize\normalfont}
+% to remove: \def\drawdc@array@celllabel{cell}
+\newlength{\drawdc@array@cellwidth}\setlength{\drawdc@array@cellwidth}{0.9cm}
+\newlength{\drawdc@array@cellheight}\setlength{\drawdc@array@cellheight}{0.9cm}
+\newlength{\drawdc@array@cellsep}\setlength{\drawdc@array@cellsep}{0.1cm}
+\def\drawdc@array@cellanchor{center}
+
+% ** index properties
+\def\drawdc@array@indexfont{\footnotesize\ttfamily\itshape}
+\newlength{\drawdc@array@indexdistance}\setlength{\drawdc@array@indexdistance}{0.1cm}
+\newlength{\drawdc@array@indexxshift}\setlength{\drawdc@array@indexxshift}{0cm}
+\newlength{\drawdc@array@indexyshift}\setlength{\drawdc@array@indexyshift}{0cm}
+\def\drawdc@array@firstindex{0}
+\def\drawdc@array@startindexat{0}
+\def\drawdc@array@stopindexat{\drawdc@array@lastcell}
+
+% ** drawing options
+\def\drawdc@array@linecolor{.}
+\newlength{\drawdc@array@linewidth}\setlength{\drawdc@array@linewidth}{0.5pt}
+\newif\ifdrawdc@array@hideindexes \drawdc@array@hideindexesfalse
+\newif\ifdrawdc@array@hidecellborder \drawdc@array@hidecellborderfalse
+\newif\ifdrawdc@array@hidetopborder \drawdc@array@hidetopborderfalse
+\newif\ifdrawdc@array@hidebottomborder \drawdc@array@hidebottomborderfalse
+\newif\ifdrawdc@array@hideleftborder \drawdc@array@hideleftborderfalse
+\newif\ifdrawdc@array@hiderightborder \drawdc@array@hiderightborderfalse
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Parameters
+%
+\pgfkeys{
+	/drawdc/array/.cd,
+	% ** array properties
+	number of cells/.code = {\def\drawdc@array@numberofcells{#1}},
+	x/.code = {\setlength{\drawdc@array@x}{#1}},
+	y/.code = {\setlength{\drawdc@array@y}{#1}},
+	border sep/.code = {\setlength{\drawdc@array@bordersep}{#1}},
+	horizontal/.code = \def\drawdc@array@axis{horizontal},
+	vertical/.code = \def\drawdc@array@axis{vertical},
+	% ** cell properties
+	cell font/.code = \def\drawdc@array@cellfont{#1},
+	cell label/.store in = \drawdc@array@celllabel,
+	cell label/.value required,
+	cell width/.code = \setlength{\drawdc@array@cellwidth}{#1},
+	cell height/.code = \setlength{\drawdc@array@cellheight}{#1},
+	cell sep/.code = \setlength{\drawdc@array@cellsep}{#1},
+	cell anchor/.code = \def\drawdc@array@cellanchor{#1},
+	% ** index properties
+	index font/.store in = \drawdc@array@indexfont,
+	index font/.value required,
+	index distance/.code = \setlength{\drawdc@array@indexdistance}{#1},
+	index x shift/.code = \setlength{\drawdc@array@indexxshift}{#1},
+	index y shift/.code = \setlength{\drawdc@array@indexyshift}{#1},
+	first index/.code = \def\drawdc@array@firstindex{#1},
+	start index at/.code = \def\drawdc@array@startindexat{#1},
+	stop index at/.code = \def\drawdc@array@stopindexat{#1},
+	% ** drawing options
+	line color/.code = \colorlet{\drawdc@array@linecolor}{#1},
+	line width/.code = \setlength{\drawdc@array@linewidth}{#1},
+	hide indexes/.code = \drawdc@array@hideindexestrue,
+	show indexes/.code = \drawdc@array@hideindexesfalse,
+	hide cell border/.code = \drawdc@array@hidecellbordertrue,
+	show cell border/.code = \drawdc@array@hidecellborderfalse,
+	hide top border/.code = \drawdc@array@hidetopbordertrue,
+	show top border/.code = \drawdc@array@hidetopborderfalse,
+	hide bottom border/.code = \drawdc@array@hidebottombordertrue,
+	show bottom border/.code = \drawdc@array@hidebottomborderfalse,
+	hide left border/.code = \drawdc@array@hideleftbordertrue,
+	show left border/.code = \drawdc@array@hideleftborderfalse,
+	hide right border/.code = \drawdc@array@hiderightbordertrue,
+	show right border/.code = \drawdc@array@hiderightborderfalse,
+	hide borders/.style = {
+		hide top border,
+		hide bottom border,
+		hide left border,
+		hide right border
+	},
+	show borders/.style = {
+		show top border,
+		show bottom border,
+		show left border,
+		show right border
+	},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Drawing stuff
+%
+\RequirePackage{xstring}
+\RequirePackage{tikz}
+\usetikzlibrary{calc, arrows, arrows.meta}
+
+% Extra variables
+\newlength{\drawdc@array@xcelldistance}
+\newlength{\drawdc@array@ycelldistance}
+\newlength{\drawdc@array@xindexdistance}
+\newlength{\drawdc@array@yindexdistance}
+
+\newcommand{\ddarray}[2][]{{%
+	% #1: options
+	% #2: base label for cells
+	\pgfkeys{
+		/drawdc/array/.cd,
+		#1, % options
+		cell label = #2, % mandatory
+	}%
+	%
+	\pgfmathparse{int(\drawdc@array@numberofcells - 1)}%
+	\edef\drawdc@array@lastcell{\pgfmathresult}%
+	\IfStrEq{\drawdc@array@axis}{horizontal}{
+		\setlength{\drawdc@array@xcelldistance}{\dimexpr \drawdc@array@cellwidth + \drawdc@array@cellsep \relax}%
+		\setlength{\drawdc@array@ycelldistance}{0pt}
+		\setlength{\drawdc@array@yindexdistance}{\dimexpr \drawdc@array@indexdistance + \drawdc@array@bordersep \relax}
+		\setlength{\drawdc@array@xindexdistance}{0pt}
+		\def\drawdc@array@indexcellanchor{north},
+		\def\drawdc@array@indexnodeanchor{south},
+		\def\drawdc@array@indexalign{center},
+	}{ % vertical
+		\setlength{\drawdc@array@xcelldistance}{0pt}
+		\setlength{\drawdc@array@ycelldistance}{\dimexpr \drawdc@array@cellheight + \drawdc@array@cellsep \relax}%
+		\setlength{\drawdc@array@yindexdistance}{0pt}
+		\setlength{\drawdc@array@xindexdistance}{\dimexpr \drawdc@array@indexdistance + \drawdc@array@bordersep \relax}
+		\def\drawdc@array@indexcellanchor{west},
+		\def\drawdc@array@indexnodeanchor{east},
+		\def\drawdc@array@indexalign{right},
+	}
+	\ifdrawdc@array@hidecellborder
+		\def\drawdc@array@cellbordercolor{none}
+	\else
+		\def\drawdc@array@cellbordercolor{\drawdc@array@linecolor}
+	\fi
+	\foreach \n in {0, ..., \drawdc@array@lastcell} 
+		\node[
+			anchor = \drawdc@array@cellanchor,
+			draw = \drawdc@array@cellbordercolor,
+			minimum height = \drawdc@array@cellheight,
+			minimum width = \drawdc@array@cellwidth,
+			line width = \drawdc@array@linewidth,
+		]
+			at (\drawdc@array@x + \n * \drawdc@array@xcelldistance,
+				\drawdc@array@y - \n * \drawdc@array@ycelldistance)
+			(\drawdc@array@celllabel\n) {};
+	\ifdrawdc@array@hideindexes
+	\else
+		\foreach \n in {\drawdc@array@startindexat, ..., \drawdc@array@stopindexat}
+			\node [
+%				baseline, draw,
+				font = \drawdc@array@indexfont,
+%				minimum height = \drawdc@array@cellheight,
+				anchor = \drawdc@array@indexnodeanchor, 
+				align = \drawdc@array@indexalign,
+%				text width = 1.5cm, % yep, hardcoded!
+			] at ($(\drawdc@array@celllabel\n.\drawdc@array@indexcellanchor)
+				+ (\drawdc@array@indexxshift, \drawdc@array@indexyshift)
+				+ (-\drawdc@array@xindexdistance, \drawdc@array@yindexdistance)$)
+			{\pgfmathparse{int(\n+\drawdc@array@firstindex)}\pgfmathresult\strut};
+	\fi
+	% borders 
+	\coordinate (topleft) at ($(\drawdc@array@celllabel0.north west) +
+		 (-\drawdc@array@bordersep, \drawdc@array@bordersep)$);
+	\coordinate (bottomright) at ($(\drawdc@array@celllabel\drawdc@array@lastcell.south east) +
+		(\drawdc@array@bordersep, -\drawdc@array@bordersep)$);
+	\IfStrEq{\drawdc@array@axis}{horizontal}{
+		% horizontal
+		\coordinate (topright) at ($(\drawdc@array@celllabel\drawdc@array@lastcell.north east) +
+			(\drawdc@array@bordersep, \drawdc@array@bordersep)$);
+		\coordinate (bottomleft) at ($(\drawdc@array@celllabel0.south west) +
+			(-\drawdc@array@bordersep, -\drawdc@array@bordersep)$);
+	}{
+		% vertical
+		\coordinate (topright) at ($(\drawdc@array@celllabel0.north east) +
+			(\drawdc@array@bordersep, \drawdc@array@bordersep)$);
+		\coordinate (bottomleft) at ($(\drawdc@array@celllabel\drawdc@array@lastcell.south west) +
+			(-\drawdc@array@bordersep, -\drawdc@array@bordersep)$);
+	}
+	\ifdrawdc@array@hidetopborder
+	\else
+		\draw[line width = \drawdc@array@linewidth]
+			($(topleft) - (0.5\drawdc@array@linewidth, 0)$) -- ($(topright) + (0.5\drawdc@array@linewidth, 0)$);
+	\fi
+	\ifdrawdc@array@hidebottomborder
+	\else
+		\draw[line width = \drawdc@array@linewidth]
+			($(bottomleft) - (0.5\drawdc@array@linewidth, 0)$) -- ($(bottomright) + (0.5\drawdc@array@linewidth, 0)$);
+	\fi
+	\ifdrawdc@array@hideleftborder
+	\else
+		\draw[line width = \drawdc@array@linewidth]
+			(topleft)-- (bottomleft);
+	\fi
+	\ifdrawdc@array@hiderightborder
+	\else
+		\draw[line width = \drawdc@array@linewidth]
+			(topright) -- (bottomright);
+	\fi
+}}
+
+
+
+\newcommand{\ddfillarray}[3][]{{
+	\pgfkeys{
+		/drawdc/array/.cd,
+		#1,
+		cell label = #2,
+	}
+	\foreach \v[count = \idx from 0] in {#3}
+		\node[font = \drawdc@array@cellfont,
+			text depth = 0.55ex] at (\drawdc@array@celllabel\idx) {\v\strut};
+}}
+
+\newcommand{\ddfillcells}[3][]{{
+	\pgfkeys{
+		/drawdc/array/.cd,
+		#1,
+		cell label = #2,
+	}
+	\foreach \idx/\v in {#3}
+		\node[font = \drawdc@array@cellfont,
+			text depth = 0.55ex] at (\drawdc@array@celllabel\idx) {\v\strut};
+}}
+
+\newcommand{\ddarrayset}[1]{
+	\pgfkeys{/drawdc/array/.cd, #1}
+}
+
+%% EOF

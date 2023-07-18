@@ -1,0 +1,178 @@
+%
+% Pacote: questions
+% Especificações para inclusão de exercícios e respostas.
+% Jander Moreira
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{questions}[2018/11/13 Questions and answers]
+
+%\RequirePackage{options}
+%
+%\options{
+%	/questions/.new family,
+%	%
+%	/questions/numbering/.new value = section,
+%}
+
+\DeclareOption*{
+	\PackageWarning{questions}{Processing \CurrentOption}
+%	\options{/questions, \CurrentOption}
+}
+
+\ProcessOptions\relax
+
+%%%%%
+
+\RequirePackage{tikz}
+\usetikzlibrary{positioning}
+\RequirePackage{amsthm}
+\RequirePackage{answers}
+\RequirePackage{needspace}
+\RequirePackage{hyperref}
+\newtheoremstyle{exerciciosty}
+  {1em}% measure of space to leave above the theorem. E.g.: 3pt
+  {1em}% measure of space to leave below the theorem. E.g.: 3pt
+  {\normalfont}% name of font to use in the body of the theorem
+  {}% measure of space to indent
+  {}% name of head font
+  {}% punctuation between head and body
+  {1ex}% space after theorem head; " " = normal interword space
+  {% custom header
+  	\hypertarget{exercise:#2}{}%
+  	\begin{tikzpicture}[baseline]
+  		\node[very thick, draw,
+  			inner sep = 2pt,
+			%text width = 3.1em, align = right,
+			rounded corners = 1pt, font=\bfseries,
+			anchor=base] (number) {#2};
+  	\end{tikzpicture}\hskip1mm%
+  	\ifx\q@tags\empty%
+  	\else%
+		\hyperlink{answer:#2}{\hasanswer}%
+	\fi
+  }% Manually specify head
+\theoremstyle{exerciciosty}
+\newtheorem{ExerciseT}{Ex}[subsection]
+\newenvironment{Exercise}[1][]{%
+	\xdef\q@tags{#1}
+	\begin{ExerciseT}\needspace{4\baselineskip}
+}{%
+	\hfill$\lrcorner$\nopagebreak
+	\end{ExerciseT}
+	
+}
+
+\Newassociation{Answer}{Solution}{ans}
+\newcommand{\answersfile}{\jobname _answers}
+\Opensolutionfile{ans}[\answersfile]
+\newcommand{\inputanswers}{\input{\answersfile}}
+\renewcommand{\Solutionlabel}[1]{%
+	\hypertarget{answer:#1}{}%
+	\hyperlink{exercise:#1}
+	{%
+		\begin{tikzpicture}[baseline]
+			\node[very thick, draw,
+				rounded corners, font=\bfseries,
+				anchor=base] {\checkmark~#1};
+		\end{tikzpicture}%
+	}%
+}
+\newcommand{\hasanswer}{
+	\begin{tikzpicture}[baseline]
+		\drawcheckmark
+	\end{tikzpicture}	
+}
+\newcommand{\tocode}{$\complement$}
+\newcommand{\drawcheckmark}{%
+	\node[
+		very thick, draw, inner sep = 0pt, text width=1.1em,
+		align = center,
+		circle, font=\bfseries,
+		anchor=base] {\checkmark};%
+}
+\newcommand{\resposta}{%
+	\vspace{-1em}
+	\begin{flushright}
+		\fbox{\scriptsize\theExerciseT\checkmark}
+	\end{flushright}
+}
+
+
+%\RequirePackage{tikz}
+%\usetikzlibrary{shapes.geometric}
+%\newcommand{\Stars}[1][1]{%
+%	\begin{tikzpicture}[scale=0.35, transform shape]
+%		\foreach \s in {1, ..., #1}
+%			\draw (0.95*\s, 0) node[star, star points=5, star point ratio=2.25,
+%				draw, fill=gray] {};
+%	\end{tikzpicture}%
+%}
+
+\RequirePackage{tcolorbox}
+\tcbuselibrary{breakable, skins}
+\newcounter{exercicio}
+\newenvironment{exercicio}[1][]{%
+	\refstepcounter{exercicio}%
+	\begin{tcolorbox}[
+			title={Exercício \theexercicio.\hspace{1em}#1},
+			coltitle=black,
+			colbacktitle=black!10,
+			fonttitle=\bfseries,
+			colback=black!10,
+			enhanced jigsaw,
+			breakable,
+			pad at break*=1pc,
+			overlay first and middle={
+				\coordinate (A1) at ($(interior.south east) + (-10pt,5pt)$);
+				\coordinate (C1) at ($(interior.south east) + (-6pt,7.5pt)$);
+				\draw[fill=tcbcol@frame] (A1) -- +(0,5pt) -- (C1) -- cycle;
+			},
+		]
+}
+{%
+	\end{tcolorbox}
+}
+\newcounter{questao}
+\newenvironment{questao}[1][]{%
+	\refstepcounter{questao}%
+	\begin{tcolorbox}[
+			title={Questão \thequestao.\hspace{1em}#1},
+			fonttitle=\bfseries,
+			colback=white,
+			enhanced jigsaw,
+			breakable,
+			pad at break*=1pc,
+			overlay first and middle={
+				\coordinate (A1) at ($(interior.south east) + (-10pt,5pt)$);
+				\coordinate (C1) at ($(interior.south east) + (-6pt,7.5pt)$);
+				\draw[fill=tcbcol@frame] (A1) -- +(0,5pt) -- (C1) -- cycle;
+			},
+		]
+}
+{%
+	\end{tcolorbox}
+}
+\newcounter{problema}
+\newenvironment{problema}[1][]{%
+	\refstepcounter{problema}%
+	\begin{tcolorbox}[
+			title={Problema \theproblema.\hspace{1em}#1},
+			fonttitle=\bfseries,
+			colback=black!20,
+			enhanced jigsaw,
+			breakable,
+			pad at break*=1pc,
+			overlay first and middle={
+				\coordinate (A1) at ($(interior.south east) + (-10pt,5pt)$);
+				\coordinate (C1) at ($(interior.south east) + (-6pt,7.5pt)$);
+				\draw[fill=tcbcol@frame] (A1) -- +(0,5pt) -- (C1) -- cycle;
+			},
+		]
+}
+{%
+	\end{tcolorbox}
+}
+
+% Fim
+%
+\endinput

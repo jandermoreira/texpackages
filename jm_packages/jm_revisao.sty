@@ -1,0 +1,89 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  JM_REVISAO.STY
+%	Anotaçãoes para o texto.
+%	2020.09.11 - Jander Moreira
+%
+%	Comandos:
+%		\Anotacao{texto original}{texto substituto}{comentário}
+%			Rasuma <texto original>, acrescenta <texto substituto> e
+%			insere <comentário> como nota de rodapé. Todos os
+%			parâmetros podem ser vazios.
+%		\MostraAnotacoes
+%			Ativa a apresentação das anotações (modo default)
+%		\OcultaAnotacoes
+%			Suprime a visibilidade das anotações, mostrando apenas
+%			o <texto substituto>. Pode ser usado para ver a 
+%			forma final que o texto terá.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\RequirePackage{xcolor}
+\RequirePackage{tikz}
+\usetikzlibrary{calc, shapes.geometric, tikzmark, positioning}
+\newcounter{contmarc}
+\colorlet{jander}{red}
+\newcommand{\marcador}{%
+	\stepcounter{contmarc}%
+	\tikzmark{marcador-\thecontmarc}%
+    \begin{tikzpicture}[remember picture, overlay,
+    	transform shape, scale = 1]
+    	\coordinate (base) at
+    		($(current page.east|-{pic cs:marcador-\thecontmarc})
+    		+ (-1cm, 5pt)$);
+		\draw [jander!50!black!40]
+			({pic cs:marcador-\thecontmarc}) -- ++(0pt, -4pt)
+			-- ($(base) + (-15pt, -9pt)$) -- ++(5pt, 9pt) -- (base);
+        \path [fill = jander!70!black] (base) circle (0.15cm);
+		\node [star, star points=5, star point ratio = 3pt, inner sep=.7pt, fill = white] at (base) {};
+    \end{tikzpicture}%
+}
+\RequirePackage{ulem}
+\newcommand{\stwords}[1]{\mywords#1 \relax\relax}
+\def\mywords#1 #2\relax{%
+	\xout{#1}\relax%
+	\ifx\relax#2\else\xout{ }\mywords#2\relax\fi%
+}
+\newcounter{anotacao}
+\newcommand{\simbolo}[1]{%
+}
+\newcommand{\Anotacao}[3]{%
+	% #1: texto a ser substituído (pode ser vazio)
+	% #2: comentário a ser inserido no texto (pode ser vazio)
+	% #3: comentário opcional no rodapé
+	\def\textoantigo{#1}%
+	\def\textonovo{#2}%
+	\def\textocomentario{#3}%
+	\ifmostraanotacoes%
+		\ifx\textoantigo\empty\else%
+			\textcolor{black!60}{[\stwords{\textoantigo}]}%
+		\fi\marcador%
+		\ifx\textonovo\empty\else%
+			\textcolor{jander!70!black}{\textonovo}%
+		\fi%
+		\ifx\textocomentario\empty\else%
+			\stepcounter{anotacao}%
+			\begingroup%
+				\renewcommand{\thefootnote}%
+					{\color{jander!50!black}(\theanotacao)}%
+				\footnote{\textcolor{jander!50!black}%
+					{\textbf{Jander:}~\textocomentario}}%
+			\endgroup%
+			\addtocounter{footnote}{-1}%
+		\fi%
+	\else%
+		\textonovo%
+		\ifx\textocomentario\empty\else\stepcounter{anotacao}\fi%
+	\fi%
+}
+
+\newif\ifmostraanotacoes
+\mostraanotacoestrue
+\newcommand{\MostraAnotacoes}{\mostraanotacoestrue}
+\newcommand{\OcultaAnotacoes}{\mostraanotacoesfalse}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

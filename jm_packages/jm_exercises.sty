@@ -1,0 +1,216 @@
+%
+% Estilo: JM_EXERCISES
+% Especificações para inclusão de exercícios e respostas.q
+% Jander Moreira
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{jm_exercises}[2018/02/20 Exercises, answers and comments]
+
+%
+% Opções/parâmetros
+%
+\newif\if@showcomments
+\@showcommentsfalse
+\newif\if@shownotes
+\@shownotesfalse
+\DeclareOption{showcomments}{
+	\@showcommentstrue
+	\PackageWarning{jm_exercices}{Show comments!}
+}
+\DeclareOption{shownotes}{
+	\@shownotestrue
+	\PackageWarning{jm_exercices}{Show notes!}
+}
+\DeclareOption*{
+	\PackageWarning{jm_exercices}{Unknown option \CurrentOption}
+}
+\ProcessOptions\relax
+
+
+\RequirePackage{amsthm}
+\RequirePackage{answers}
+\newtheoremstyle{exerciciosty}
+  {1em}% measure of space to leave above the theorem. E.g.: 3pt
+  {1em}% measure of space to leave below the theorem. E.g.: 3pt
+  {\normalfont}% name of font to use in the body of the theorem
+  {}% measure of space to indent
+  {\bfseries}% name of head font
+  {.}% punctuation between head and body
+  {1ex}% space after theorem head; " " = normal interword space
+  {}% Manually specify head
+\theoremstyle{exerciciosty}
+\newtheorem{Exercise}{Exercício}
+%\newenvironment{Exercise} %% versão antiga
+%	{\begin{Ex}\normalfont\hspace{1ex}}
+%	{\end{Ex}}
+\Newassociation{Answer}{Solution}{ans}
+\renewcommand{\Solutionlabel}[1]{\textbf{Resp.~ex.~#1.\hspace{1ex}}}
+\newcommand{\resposta}{%
+	\vspace{-1em}
+	\begin{flushright}
+		\fbox{\scriptsize\theExercise\checkmark}
+	\end{flushright}
+}
+
+
+\RequirePackage{jm_symbols}
+
+\RequirePackage{tcolorbox}
+\RequirePackage{xcolor}
+\tcbuselibrary{breakable, skins}
+\usetikzlibrary{calc}
+\newcounter{exercicio}
+\newenvironment{exercicio}[1][]{%
+	\refstepcounter{exercicio}%
+	\begin{tcolorbox}[
+			title={Exercício \theexercicio.\hspace{1em}#1},
+			coltitle=black,
+			colbacktitle=black!10,
+			fonttitle=\bfseries,
+			colback=black!10,
+			enhanced jigsaw,
+			breakable,
+			pad at break*=1pc,
+			overlay first and middle={
+				\coordinate (A1) at ($(interior.south east) + (-10pt,5pt)$);
+				\coordinate (C1) at ($(interior.south east) + (-6pt,7.5pt)$);
+				\draw[fill=tcbcolframe] (A1) -- +(0,5pt) -- (C1) -- cycle;
+			},
+		]
+}
+{%
+	\end{tcolorbox}
+}
+
+% environment: comentario
+\newcommand{\commentson}{\@showcommentstrue}
+\newcommand{\commentsoff}{\@showcommentsfalse}
+\RequirePackage{verbatim} % \comment ... \endcomment
+\newcounter{comentario}
+\newenvironment{comentario}[1][Comentário \thecomentario.]{%
+	\refstepcounter{comentario}%
+	\if@showcomments
+		\begin{tcolorbox}[
+				title={#1},				
+				colupper=blue!50!black,
+				coltitle=blue!50!black,
+				colbacktitle=blue!10,
+				fonttitle=\bfseries,
+				colback=blue!10,
+				enhanced jigsaw,
+				breakable,
+				pad at break*=1pc,
+				colframe=blue!40!black,
+				overlay first and middle={
+					\coordinate (A1) at ($(interior.south east) + (-10pt,5pt)$);
+					\coordinate (C1) at ($(interior.south east) + (-6pt,7.5pt)$);
+					\draw[fill=tcbcolframe] (A1) -- +(0,5pt) -- (C1) -- cycle;
+				},
+			]
+		\else
+			\comment
+		\fi
+}
+{%
+	\if@showcomments
+		\end{tcolorbox}
+	\else
+		\endcomment
+	\fi 
+}
+
+% environment: notas
+\newcommand{\noteson}{\@shownotestrue}
+\newcommand{\notesoff}{\@shownotesfalse}
+\newenvironment{notas}[1][]{%
+	\if@shownotes
+		\begin{tcolorbox}[
+				title={#1},				
+				colupper=green!30!black,
+				coltitle=green!30!black,
+				colbacktitle=green!10,
+				fonttitle=\bfseries,
+				colback=green!5,
+				enhanced jigsaw,
+				breakable,
+				pad at break*=1pc,
+				colframe=green!40!black,
+				overlay first and middle={
+					\coordinate (A1) at ($(interior.south east) + (-10pt,5pt)$);
+					\coordinate (C1) at ($(interior.south east) + (-6pt,7.5pt)$);
+					\draw[fill=tcbcolframe] (A1) -- +(0,5pt) -- (C1) -- cycle;
+				},
+			]
+		\else
+			\comment
+		\fi
+}
+{%
+	\if@shownotes
+		\end{tcolorbox}
+	\else
+		\endcomment
+	\fi 
+}
+
+
+\newcounter{questao}
+\newenvironment{questao}[1][]{%
+	\refstepcounter{questao}%
+	\begin{tcolorbox}[
+			title={Questão \thequestao.\hspace{1em}#1},
+			fonttitle=\bfseries,
+			colback=white,
+			enhanced jigsaw,
+			breakable,
+			pad at break*=1pc,
+			overlay first and middle={
+				\coordinate (A1) at ($(interior.south east) + (-10pt,5pt)$);
+				\coordinate (C1) at ($(interior.south east) + (-6pt,7.5pt)$);
+				\draw[fill=tcbcolframe] (A1) -- +(0,5pt) -- (C1) -- cycle;
+			},
+		]
+}
+{%
+	\end{tcolorbox}
+}
+\newcounter{problema}
+\newenvironment{problema}[1][]{%
+	\refstepcounter{problema}%
+	\begin{tcolorbox}[
+			title={Problema \theproblema.\hspace{1em}#1},
+			fonttitle=\bfseries,
+			colback=black!20,
+			enhanced jigsaw,
+			breakable,
+			pad at break*=1pc,
+			overlay first and middle={
+				\coordinate (A1) at ($(interior.south east) + (-10pt,5pt)$);
+				\coordinate (C1) at ($(interior.south east) + (-6pt,7.5pt)$);
+				\draw[fill=tcbcol@frame] (A1) -- +(0,5pt) -- (C1) -- cycle;
+			},
+		]
+}
+{%
+	\end{tcolorbox}
+}
+
+% Tempo de exercícios (minutos)
+\newcounter{exercisetime}
+\newif\ifexerciseprogress
+\newif\ifexecisevisible \execisevisibletrue
+\newcommand{\exerciseprogresson}{\exerciseprogresstrue}
+\newcommand{\exerciseprogressoff}{\exerciseprogressfalse}
+\newcommand{\exercisevisibleon}{\execisevisibletrue}
+\newcommand{\exercisevisibleoff}{\execisevisiblefalse}
+\RequirePackage{siunitx}
+\newcommand{\exercisetime}[1]{%
+	\ifexecisevisible\SI{#1}{min}\fi%
+	\addtocounter{exercisetime}{#1}%
+	\ifexerciseprogress(\theexercisetime)\fi%
+}
+\newcommand{\exercisetotaltime}{\theexercisetime}
+
+% Fim
+%
+\endinput
