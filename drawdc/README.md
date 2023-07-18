@@ -11,6 +11,9 @@ Ferramentas
 
 Tudo isso é beta! :-)
 
+This code is $\textsf{\large\color{red}under development}$ and it's not ready for the general public.
+
+
 ## instalação
 Vá para seu diretório TEXMF (e.g., `~/texmf/tex/latex/local`) e salve todos os arquivos lá.
 
