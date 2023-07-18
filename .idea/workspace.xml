@@ -4,8 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7b65142b-6f64-4514-b4da-bcadd61b1d6f" name="Changes" comment="Update">
+    <list default="true" id="7b65142b-6f64-4514-b4da-bcadd61b1d6f" name="Changes" comment="Update LICENSE">
+      <change afterPath="$PROJECT_DIR$/beamertheme-Monjolinho/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/beamertheme-Peach/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/beamertheme-SaoCarlos/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/beamertheme-cap/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/boxing/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dsdraw/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/fastis/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mendnotes/LICENSE" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/algxpar/license" beforeDir="false" afterPath="$PROJECT_DIR$/algxpar/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/beamertheme-lalic/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/beamertheme-lalic/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drawdc/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/drawdc/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/versionchanges/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/versionchanges/LICENSE" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,6 +44,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
+    "last_opened_file_path": "/home/jander/texmf/tex/latex/local/versionchanges",
     "project.structure.last.edited": "Global Libraries",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
@@ -216,6 +229,7 @@
     <MESSAGE value="Config" />
     <MESSAGE value="Standard naming" />
     <MESSAGE value="Update" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update" />
+    <MESSAGE value="Update LICENSE" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update LICENSE" />
   </component>
 </project>
