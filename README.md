@@ -7,7 +7,7 @@ Some packages are more "professional", aimed at general use, while others are mo
 There are completed and under development packages. Check the status of each package in its own directory, as well as installation and usage information.
 
 ## Documentation
-The directory `docs` contains the PDF documentation files for all packages.
+The directory [`docs`](./docs) contains the PDF documentation files for all packages.
 
 ## Licence
 Licenses are specified in individual packages. If the license is not present, assume the **LaTeX Project Public License (LPPL version 1.3c)**.
