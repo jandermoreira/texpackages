@@ -1,0 +1,225 @@
+%
+% DRAWDC: linkedlist
+% This file is loaded by ../drawdc.sty
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Variables
+%
+
+\newlength{\ds@linkedlist@nodeheight}
+\newlength{\ds@linkedlist@infocellwidth}
+\newlength{\ds@linkedlist@linkcellwidth}
+\newlength{\ds@linkedlist@nodedistance}
+\newlength{\ds@linkedlist@linkwidth}
+
+
+\newcommand{\ds@linkedlist@defaults}{
+	\def\ds@linkedlist@startat{(0, 0)}
+	\def\ds@linkedlist@font{\normalsize\normalfont}
+	\setlength{\ds@linkedlist@nodeheight}{0.75cm}
+	\setlength{\ds@linkedlist@infocellwidth}{1.2cm}
+	\setlength{\ds@linkedlist@linkcellwidth}{0.5cm}
+	\setlength{\ds@linkedlist@nodedistance}{1cm}
+	\setlength{\ds@linkedlist@linkwidth}{0.5pt}
+	\def\ds@linkedlist@linecolor{black}
+	\def\ds@linkedlist@linkbackgroundcolor{black!20}
+	\def\ds@linkedlist@options{}
+}
+\ds@linkedlist@defaults
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Parameters
+%
+\pgfkeys{
+	/drawdc/linked list/.cd,
+	% ** list properties
+	start at/.store in = \ds@linkedlist@startat,
+	node height/.code = {\setlength{\ds@linkedlist@nodeheight}{#1}},
+	node distance/.code = {\setlength{\ds@linkedlist@nodedistance}{#1}},
+	start at/.store in = \ds@linkedlist@currentxy,	
+	%
+	options/.code = {\def\ds@linkedlist@options{/tikz/.cd, #1}},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Drawing stuff
+%
+\usetikzlibrary{arrows.meta, calc, chains, shapes.multipart}
+\tikzset{
+	every ll node/.style = {
+		draw = \ds@linkedlist@linecolor,
+		inner sep = 0pt,
+		outer sep = 0pt,
+		text width = \ds@linkedlist@infocellwidth, 
+		minimum height = \ds@linkedlist@nodeheight,
+		text depth = 0.05\ds@linkedlist@nodeheight,
+		font = \ds@linkedlist@font,
+		anchor = center,
+		align = center,
+		rectangle split,
+		rectangle split horizontal,
+	    rectangle split parts=2,
+	    rectangle split part fill={none, black!30},
+	    rectangle split empty part width = \ds@linkedlist@linkcellwidth,
+	},
+%	every ll next/.style = {
+%		draw = \ds@linkedlist@linecolor,
+%		inner sep = 0pt,
+%		outer sep = 0pt,
+%		fill = \ds@linkedlist@linkbackgroundcolor,
+%		anchor = west,
+%		text width = \ds@linkedlist@linkcellwidth,
+%		minimum height = \ds@linkedlist@nodeheight,
+%	},
+	every ll link/.style = {
+		line width = \ds@linkedlist@linkwidth,
+		shorten > = 0.5pt, % todo: parâmetro
+		-latex,
+%		shorten < = -1pt, % todo: parâmetro
+%		{Circle[width=2pt,length=2pt]}-latex,
+	},
+    hconnect/.style={
+    	every ll link,
+		to path={
+			let \p1=($(\tikztotarget.west) - (\tikztostart.east)$),
+			\n1={abs(\y1)},
+			\n2={abs(\x1)},
+			\n3={min(abs(\y1/2), 1pt)}
+			in
+			\ifdim\n1>2pt
+				\ifdim\n2>1cm 
+					(\tikztostart.two east -| \tikztostart.two south)
+					[rounded corners = \n3]
+					-| ($(\tikztotarget.west)!0.75!(\tikztostart.east)$)
+					|- (\tikztotarget.west) 
+				\else
+					(\tikztostart.two east -| \tikztostart.two south)
+					[rounded corners = \n3]
+					-| ($(\tikztotarget.west)!0.5!(\tikztostart.east)$)
+					|- (\tikztotarget.west) 
+				\fi
+			\else
+				(\tikztostart.two east-|\tikztostart.two south)
+				-- (\tikztotarget.west) 
+			\fi
+		}
+	}
+}
+
+% helper function to set a key
+\newcommand{\ds@linkedlist@format}[2]{%
+	\edef\opt{/tikz/.cd, #1/.style = {#2}}%
+	\pgfkeysalsofrom{\opt}%
+	#1%
+}
+
+\newcommand{\dslldrawnull}[1]{%
+	\draw%[line width = 0.5pt]
+		#1 circle (3pt)
+		#1 ++(225:3pt) -- ++(45:6pt);
+}
+
+\newcommand{\dslllink}[3][--]{%
+	\begingroup
+	\tikzset{every link/.append style = {shorten < = 0pt, -latex}}
+	\dslink[#1]{#2}{#3}
+	\endgroup
+}
+
+\newcommand{\dsll}[3][]{
+	\pgfkeys{
+		/drawdc/linked list/.cd,
+		options = {}, % reset every time
+		#1
+	}%
+	\begin{scope}[
+		start chain = #2 going right,
+		node distance = \ds@linkedlist@nodedistance,
+		nodes = {every ll node, on chain = #2, join = by hconnect},
+	]
+		% process options
+		\pgfkeysalsofrom{\ds@linkedlist@options}
+		\def\@@null{null}%
+		\edef\listofnodes{#3}%
+		\foreach \llopt/\llnode in \listofnodes {%
+			\ifx\llnode\@@null
+				\draw%[line width = 0.5pt]
+					(\tikzchaincurrent.two east-|\tikzchaincurrent.two south) circle (3pt)
+					(\tikzchaincurrent.two east-|\tikzchaincurrent.two south) ++(225:3pt) -- ++(45:6pt);
+			\else
+				\ifx\llopt\llnode
+					\node{\llnode\strut};
+				\else
+					\ds@linkedlist@format{this node}{\llopt}
+					\node[this node]{\llnode\strut};
+				\fi
+			\fi
+		};
+	\end{scope}
+}
+
+
+\newcommand{\dsllset}[1]{
+	\pgfkeys{/drawdc/linked list/.cd, #1}
+}
+
+%% EOF
+
+
+
+%\newcommand{\dsllnode}[2][]{%
+%	\pgfkeys{
+%		/drawdc/linked list/.cd,
+%		#1,
+%	}
+%	\node [every ll node] at \ds@linkedlist@currentxy
+%		(last node) {#2\strut};
+%	\node[every ll next] at (last node.east) (last link) {};
+%	\ifds@linkedlist@uselabel
+%		\node [every ll node, draw = none] at \ds@linkedlist@currentxy
+%				(\ds@linkedlist@listname_\theddlinkedarraynodecounter) {};
+%		\stepcounter{ddlinkedarraynodecounter}
+%	\fi
+%	\gdef\ds@linkedlist@currentxy{(last link)}
+%}
+%
+%\newcommand{\dsllnextnode}[2][]{%
+%	\pgfkeys{
+%		/drawdc/linked list/.cd,
+%		#1,
+%	}
+%	\node [every ll node] at
+%		($(last link) + (\ds@linkedlist@nodedistance + 0.5\ds@linkedlist@infocellwidth, 0)$)
+%		(last node) {#2\strut};
+%	\ifds@linkedlist@uselabel
+%		\node [every ll node, draw = none] at
+%			($(last link) + (\ds@linkedlist@nodedistance + 0.5\ds@linkedlist@infocellwidth, 0)$)
+%			(\ds@linkedlist@listname_\theddlinkedarraynodecounter) {};
+%		\stepcounter{ddlinkedarraynodecounter}
+%	\fi
+%	\draw[every ll link] (last link.center)
+%		-| ++(0.5\ds@linkedlist@linkwidth, 0) |-
+%		(last node.west);
+%	\fill (last link.center) circle (2pt);
+%	\node[every ll next] at (last node.east) (last link) {};
+%	\gdef\ds@linkedlist@currentxy{(last link)}
+%}
+%
+%
+%\newcommand{\dslllinktonull}[1][]{%
+%%	\fill (last link.center) circle (2pt);
+%%	\draw[line width = \ds@linkedlist@linkwidth]
+%%		(last link.center) -- ++(0, -0.8cm) ;
+%%	\foreach \bar[count = \n from 0] in {0.25, 0.2, 0.15}{
+%%		\draw[line width = \ds@linkedlist@linkwidth]
+%%			($(last link.center) + (-\bar, -0.8cm - 1.8 * \n)$) --
+%%			($(last link.center) + (\bar, -0.8cm - 1.8 * \n)$);
+%%	}
+%	\def\link{#1}
+%	\ifx\link\empty
+%		\node at \ds@linkedlist@currentxy {\footnotesize$\oslash$};
+%	\else
+%		\node at #1 {\footnotesize$\oslash$};
+%	\fi
+%}

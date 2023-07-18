@@ -1,0 +1,445 @@
+%%
+%% DSDRAW: file
+%% This file is loaded by ../dsdraw.sty
+%%
+%
+\ds@requirelibrary{record}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Variables
+%
+
+\newcounter{dsfrecordnumber} % current number of records in file
+\newcounter{dsfbytenumber} % current number of bytes in file
+\newcounter{dsfblocknumber} % current block
+\newcounter{dsfrecordnumberinblock} % number of records in block
+
+\newif\ifds@file@firstblockinfile
+\newif\ifds@file@showframe
+\newif\ifds@file@showoffsets
+\newif\ifds@file@showstructurerecordoffsets
+\newif\ifds@file@showstructureblockoffsets
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Options
+%
+
+\pgfkeys{
+	/dsdraw/file/.cd,
+	%
+	show frame/.is if = ds@file@showframe,
+	hide frame/.code = {\ds@file@showframefalse},
+	%
+	name/.store in = \ds@file@chainname,
+	record height/.store in = \ds@file@recordheight,
+	show offsets/.is if = ds@file@showoffsets,
+	hide offsets/.code = {\ds@file@showoffsetsfalse},
+	%
+	structure offsets/.is choice,
+	structure offsets/all/.code = {
+		\ds@file@showstructurerecordoffsetstrue
+		\ds@file@showstructureblockoffsetstrue
+	},
+	structure offsets/record/.code = {
+		\ds@file@showstructurerecordoffsetstrue
+		\ds@file@showstructureblockoffsetsfalse
+},
+	structure offsets/block/.code = {
+		\ds@file@showstructurerecordoffsetsfalse
+		\ds@file@showstructureblockoffsetstrue
+	},
+	structure offsets/none/.code = {
+		\ds@file@showstructurerecordoffsetsfalse
+		\ds@file@showstructureblockoffsetsfalse
+	},
+	structure offsets/.default = all,
+%	structure offsets = all,
+	%
+	kbyte width/.store in = \ds@file@kbytewidth,
+	block size/.store in = \ds@file@blocksize,
+	block size = 1024,
+	%
+	records/.store in = \ds@file@recordsinblock,
+	%
+	record options/.code = {\dsrecordset{#1}},
+	field options/.code = {\dsfieldset{#1}},
+	tikz options/.code = {\dstikzset{#1}},
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Utilities
+%
+
+% dsfileset: shortcut to file-related pgfkeys
+\newcommand{\dsfileset}[1]{
+%	\def\keysmacro{/dsdraw/file/.cd, #1}
+%	\edef\ekeysmacro{\keysmacro}%
+%	\pgfkeysalsofrom{\ekeysmacro}%
+	\pgfkeys{/dsdraw/file/.cd, #1}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Defaults
+%
+
+\dsfileset{%
+	name = file,
+	hide frame,
+	records = 0, % i.e., any
+	record height = 1em,
+	hide offsets,
+	kbyte width = 10em,
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Drawing stuff
+%
+
+\tikzset{
+	file/.style = {
+		inner xsep = 0.1em,
+		inner ysep = 0.1em,
+		fit={
+			(\ds@file@chainname-record-0.north west)
+			(current bounding box.south east)
+		}
+	},
+	block/.style = {
+		draw,
+		inner xsep = 0.3em,
+		inner ysep = 0.2em,
+		fit = {
+			(\ds@file@chainname-record-\@firstrecordinblock.north west)
+%			(current bounding box.south east)
+			(\ds@file@chainname-record-\@lastrecordinblock.south east)
+		},
+	},
+	file offset/.style = {
+		transform shape,
+		scale = 0.5,
+		text depth = 0.25ex,
+		inner ysep = 0.3em,
+		inner xsep = 0.1em,
+		outer sep = 0pt,
+	},
+	file record v/.style = {
+%		draw = yellow, dashed, very thick, text width = 2em,
+		minimum height = \ds@file@recordheight,
+		inner sep = 0pt,
+		outer sep = 0pt,
+		anchor = north west,
+		on chain,
+	},
+	file record h/.style = {
+		draw,
+		fill = white,
+		text height = \ds@file@recordheight,
+		text depth = \dimexpr \ds@file@recordheight/3,
+		align = center,
+		inner sep = 0em,
+		outer sep = 0em,
+		anchor = west,
+		on chain,
+	},
+}
+
+\ExplSyntaxOn
+% ds_call_dsnamedrecord:nnn: auxiliary function to call \dsnamedrecord
+%	with all parameters
+%	#1: options for \dsrecordset
+%	#2: record name (see \dsnewnamedrecord)
+%	#3: comma-separated list of fields contents
+\cs_new_protected:Npn \ds_call_dsnamedrecord:nnn #1#2#3 {
+	\begingroup
+	\edef\@name{\ds@file@chainname-record-\thedsfrecordnumber}
+	\dsrecordset{
+		name = \@name,
+		#1,
+	}
+	\xdef\ds@file@currentrecordname{\ds@record@chainname} % hack!
+	\dsnamedrecord[#1]{#2}{#3}
+	\endgroup
+}
+
+% ds@file@drawrecordhelp: process a single record (called from
+%	\ds@file@drwnamedrecord) and check if there are optional configuration
+%	#1: record name (see \dsnewnamedrecord)
+%	#2: the record: comma-separated list of fields + (optional) "/" list
+%		of comma-separated list of record options
+\NewExpandableDocumentCommand{\ds@file@drawrecordhelper} { mm } {
+	\seq_set_split:Nnn \l_fields_options_seq { / } { #2 }
+	\tl_set:Nn \l_fields_tl { \seq_item:Nn \l_fields_options_seq { 1 } }
+	\tl_set:Nn \l_options_tl { \seq_item:Nn \l_fields_options_seq { 2 } }
+	\exp_args:Neee \ds_call_dsnamedrecord:nnn
+		{ \l_options_tl } { #1 } { \l_fields_tl }
+}
+\ExplSyntaxOff
+
+% ds@file@drawnamedrecord: handles positioning and scope for each record
+%	#1: record name (see \dsnewnamedrecord)
+%	#2: the record: comma-separated list of fields + (optional) "/" list
+%		of comma-separated list of record options
+\NewDocumentCommand{\ds@file@drawnamedrecord} {mm} {
+	\edef\@currentrecord{\ds@file@chainname-record-\thedsfrecordnumber}
+	\node[file record v] (\@currentrecord) {}; % reference node
+	\begin{scope}[shift = (\@currentrecord.north west)]
+		\ds@file@drawrecordhelper{#1}{#2}
+		\ifds@file@showoffsets
+			\node[anchor = east, font = \ttfamily, scale = 0.7]
+				at ($(\@currentrecord.west) - (1em, 0)$) {\nhex{8}{\thedsfbytenumber}};
+		\fi
+		\addtocounter{dsfbytenumber}{\thedsrbytenumber}
+		\pgfnodealias{\@currentrecord}{\ds@file@currentrecordname}
+		\ifnum\thedsrbytenumber>\@longestrecord\relax
+			\global\edef\@longestrecord{\thedsrbytenumber}
+		\fi
+	\end{scope}
+	\stepcounter{dsfrecordnumber}
+	\stepcounter{dsfrecordnumberinblock}
+}
+
+
+\ExplSyntaxOn
+% \ds@file@drawrecord: helper to draw a single record in a structure file
+%	#1: record label / length in bytes
+\NewDocumentCommand{\ds@file@drawrecord} {m} {
+	\seq_set_split:Nnn \l_record_seq { / } { #1 }
+	\tl_set:Nn \l_label_tl { \seq_item:Nn \l_record_seq { 1 } }
+	\tl_set:Nn \l_length_tl { \seq_item:Nn \l_record_seq { 2 } }
+	\ds@file@calldrawrecord { \l_label_tl } { \l_length_tl }
+}
+
+\NewDocumentCommand{\ds@file@drawnamedrecordexpand} {mm} {
+	\exp_args:Noo \ds@file@drawnamedrecord { #1 } { #2 }
+}
+
+% dsfilenamedhelper: auxiliary to loop through a list of records
+%	#1: record name (see \dsnewnamedrecord)
+%	#2: a comma-separated list of records (fields contents/options)
+\NewDocumentCommand{\dsfilenamedhelper}{mm}{
+	\clist_map_inline:nn {#2} { \ds@file@drawnamedrecord {#1} {##1} }
+}
+\ExplSyntaxOff
+
+% ds@file@calldrawrecord: draw a single record
+%	#1: record label
+%	#2: record length in bytes
+\NewDocumentCommand{\ds@file@drawstructurerecord} {mm} {
+	\edef\@currentnode{\ds@file@chainname-record-\thedsfrecordnumber}
+	\stepcounter{dsfrecordnumber}
+	\pgfmathparse{\ds@file@kbytewidth/\ds@file@blocksize * #2 - 0.1em}
+	\edef\@nodewidth{\pgfmathresult pt}
+	
+	% draw record
+	\node[file record h, text width = \@nodewidth]
+		(\@currentnode) {#1};
+	
+	% draw offsets
+	\ifds@file@showstructurerecordoffsets
+		\node[file offset, anchor = north west]
+			at (\@currentnode.south west) {\thedsfbytenumber};
+		\pgfmathparse{int(\thedsfbytenumber + #2 - 1)}
+		\node[file offset, anchor = north east]
+			at (\@currentnode.south east) (file offset) {\pgfmathresult};
+	\else
+		\node[file offset, anchor = north east] 
+			at (\@currentnode.south east) (file offset) {};
+	\fi
+	\addtocounter{dsfbytenumber}{#2}
+}
+
+\NewDocumentCommand{\ds@file@drawstructureblocks} {} {
+	\pgfmathsetmacro\@remainingbytes{int(mod(\thedsfbytenumber, \ds@file@blocksize))}
+	\ifnum\@remainingbytes=0\relax
+		\pgfmathsetmacro\@lastblock{int(\thedsfbytenumber / \ds@file@blocksize) - 1}
+	\else
+		\pgfmathsetmacro\@lastblock{int(\thedsfbytenumber / \ds@file@blocksize)}
+	\fi
+	\begin{scope}[on background layer]
+		\foreach \@block in {0, ..., \@lastblock}{
+			% draw block
+			\path
+				let
+					\p{record} = (\ds@file@chainname-record-0.north),
+					\p{offset} = (file offset.south),
+					\p{blocktop} = (
+						\@block * \ds@file@kbytewidth - 0.05em,
+						\y{record} + 0.3em
+					),
+					\p{blockbottom} = (
+						\@block * \ds@file@kbytewidth + \ds@file@kbytewidth
+							- 0.05em,
+						\y{offset}
+					),
+				in 
+					node [draw,
+						fit = {(\p{blocktop}) (\p{blockbottom})},
+						inner sep = 0pt, outer sep = 0pt,
+					] (\ds@file@chainname-block-\@block) {};
+			
+			% draw offsets
+			\ifds@file@showstructureblockoffsets
+				\pgfmathparse{int(\@block * \ds@file@blocksize)}
+				\node[file offset, anchor = north west]
+					at (\ds@file@chainname-block-\@block.south west)
+					{\pgfmathresult};
+				\pgfmathparse{int((\@block + 1) * \ds@file@blocksize - 1)}
+				\node[file offset, anchor = north east]
+					at (\ds@file@chainname-block-\@block.south east)
+					{\pgfmathresult};
+			\fi
+		}
+	\end{scope}
+	
+}
+
+\ExplSyntaxOn
+% ds@file@filestructurehelper: auxiliary to loop through a list of
+%	records and sizes
+%	#1: comma-separated list of pairs record-label/size-in-bytes
+\NewDocumentCommand{\ds@file@filestructurehelper} {m} {
+	\clist_map_inline:nn {#1} {
+		% get label and size
+		\seq_set_split:Nnn \l_record_seq { / } { ##1 }
+		\tl_set:Nn \l_label_tl { \seq_item:Nn \l_record_seq { 1 } }
+		\tl_set:Nn \l_size_tl { \seq_item:Nn \l_record_seq { 2 } }
+		\tl_set:Nn \l_options_tl { \seq_item:Nn \l_record_seq { 3 } }
+		
+		% draw
+		\group_begin:
+		\exp_args:Ne \dsfileset { \l_options_tl }
+		\ds@file@drawstructurerecord { \l_label_tl } { \l_size_tl }
+		\group_end:
+	}
+	\ds@file@drawstructureblocks
+}
+\ExplSyntaxOff
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Interface
+
+% dsfilerecords: draws a list of records
+\NewExpandableDocumentCommand{\dsfilerecords} {mm} {
+	\dsfilenamedhelper{#1}{#2}
+}
+
+\NewDocumentCommand{\dsfilenamedrecord} {smm} {
+	\IfBooleanTF{#1}{
+		\ds@file@drawnamedrecordexpand{#2}{#3} % fully expand arguments
+	}{
+		\ds@file@drawnamedrecord{#2}{#3} % regular tokens
+	}
+}
+
+\NewDocumentEnvironment{dsfile}{O{}}{
+	\begingroup
+	\dsfieldset{%
+		terminator byte = {},
+		fill byte = {},
+	}
+	\tikzset{control bytes/.append style = {fill = none}}
+	\begin{dsfile*}[#1]
+}{
+	\end{dsfile*}
+	\endgroup
+}
+
+\NewDocumentEnvironment{dsfile*}{O{}}{
+	\begingroup
+	
+	% initializations and defaults
+	\setcounter{dsfrecordnumber}{0}
+	\setcounter{dsfbytenumber}{0}
+	\setcounter{dsfblocknumber}{0}
+	
+	\dsfileset{record height = 1.5em}
+	\dsrecordset{%
+		hide record frame,
+		compact field height = \ds@file@recordheight,
+	}	
+	
+	% code
+	\dsfileset{#1}
+	\ifds@record@recordframe
+		\def\@dist{0.3em}
+	\else
+		\def\@dist{0.1em}
+	\fi
+	\begin{scope}
+	\dstikzset{%
+		start chain = \ds@file@chainname{} going below,
+		node distance = \@dist,
+	}
+	\ds@file@firstblockinfiletrue
+	\def\@longestrecord{0}
+}{
+	\begingroup % to frame or not to frame
+	\ifds@file@showframe
+		\tikzset{file/.append style = {draw}}
+	\fi
+	\node[file] (\ds@file@chainname) {};
+	\endgroup
+	\end{scope}
+	\endgroup
+}
+
+\NewDocumentEnvironment{dsblock} {m} {
+	\ifds@file@firstblockinfile
+		\global\ds@file@firstblockinfilefalse
+	\else
+		% give some space between blocks
+		\node[on chain,
+			text height = \dimexpr 2pt + 0.2em \relax, % height of the node
+			outer sep = -0.8pt, % reduce the node to 0pt
+			inner sep = 0pt] {};
+	\fi
+	\edef\@firstrecordinblock{\thedsfrecordnumber}
+	\setcounter{dsfrecordnumberinblock}{0}
+}{
+	\pgfmathsetmacro\@remain{%
+		int(\ds@file@recordsinblock - \thedsfrecordnumberinblock)}
+%	\dsnewnamedrecord{__empty_record}{\dsfieldfixed*{\@longestrecord}}
+	\@whilenum\thedsfrecordnumberinblock<\ds@file@recordsinblock\relax\do{
+		\dsfilenamedrecord{#1}{{},{},{},{},{},{},{},{},{},{},{},{}}%/hide field frame}
+	}
+	\pgfmathsetmacro\@lastrecordinblock{int(\thedsfrecordnumber - 1)}
+	\node[block] (block) {};
+	\node[below right, font = \itshape, scale = 0.75]
+		at (block.north east)
+		{bloco $\thedsfblocknumber$};
+	\stepcounter{dsfblocknumber}
+}
+
+
+% dsfilestructure: file with records and block boundaries (horizontal)
+%	#1: Options (optional)
+%	#2: comma-separated list of records and sizes
+\NewDocumentCommand{\dsfilestructure} { O{}m } {
+	\begingroup
+	\dsfileset{#1}
+	\def\@dist{0.1em}
+	\setcounter{dsfbytenumber}{0}
+	\setcounter{dsfrecordnumber}{0}
+	\begin{scope}
+		\dstikzset{%
+			start chain = \ds@file@chainname{} going right,
+			node distance = \@dist,
+		}
+		\ds@file@filestructurehelper{#2}
+	\end{scope}
+	\endgroup
+}
+
+
+\NewDocumentCommand{\dsfileskip} { O{1}m } {
+%	\node...
+}
+
+
+%% EOF

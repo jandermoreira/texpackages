@@ -1,0 +1,347 @@
+
+
+\subsection{\protect\library{record}}
+Drawing records and fields.
+\usedslibrary{record}
+
+\subsubsection{Records and fields}
+Record structure with field names and byte offsets:
+\begin{tcblisting}{}
+\usedslibrary{record}
+\begin{tikzpicture}
+	\dsrecordstructure{%
+		name/15,       % 15 bytes
+		status/1,      % single byte, label won't fit
+		n/2,           % two bytes, label fits,
+		phone/30/10,   % 30 bytes, but draws with 10
+		e-mail/50/20   % 30 bytes, but draws with 20
+	}
+\end{tikzpicture}\par
+\vspace{1em}
+\begin{tikzpicture}
+	\dsrecordstructure{%
+		name/15,       % 15 bytes
+		status/1/6,    % single byte, but draws with 6; label fits now
+		n/2,           % two bytes, label fits,
+		phone/30/10,   % 30 bytes, but draws with 10
+		e-mail/50/20   % 30 bytes, but draws with 20
+	}
+\end{tikzpicture}
+\end{tcblisting}
+
+Field with contents:
+\begin{tcblisting}{}
+\begin{tikzpicture}[]
+	% fields must be placed inside dsrecord environments
+	\begin{dsrecord}
+		\dsfield{John~Taylor} % spaces must be explicit
+	\end{dsrecord}
+
+	% starred version hides outer border
+	\begin{dsrecord*}[][yshift = -2.5em] 
+		\dsfield{John~Taylor} 
+	\end{dsrecord*}
+
+	\begin{dsrecord*}[][yshift = -5em] 
+		\dsfield*{John~Taylor} % \dsfield* is a compact version (looks ugly)
+	\end{dsrecord*}
+\end{tikzpicture}
+\end{tcblisting}
+
+When field contents use UTF-8 encoded characters, such as ``á'' and ``ñ'', they are represented by their two-byte encoding in hexadecimal.
+
+\begin{tcblisting}{}
+\begin{tikzpicture}[]
+	\begin{dsrecord}
+		\dsfield{João~Afrânio}
+	\end{dsrecord}
+\end{tikzpicture}
+
+\begin{tikzpicture}[]
+	\begin{dsrecord}
+		\dsfield{Jo{ã}o~Afr{â}nio}
+	\end{dsrecord}
+\end{tikzpicture}
+\end{tcblisting}
+
+
+Field with contents using a terminator (default: \texttt{0x00}):
+\begin{tcblisting}{}
+\begin{tikzpicture}[]
+	\begin{dsrecord*}
+		\dsfieldterminator{John~Taylor}
+	\end{dsrecord*}
+
+	\begin{dsrecord*}[][yshift = -2.5em]
+		\dsfieldterminator{John~Taylor}[*] % new terminator
+	\end{dsrecord*}
+\end{tikzpicture}
+\end{tcblisting}
+
+Field with contents using binary length prefix (big endian with 2 bytes):
+\begin{tcblisting}{}
+\begin{tikzpicture}[]
+	\begin{dsrecord*}
+		\dsfieldprefixed{John~Taylor}
+	\end{dsrecord*}
+\end{tikzpicture}
+\end{tcblisting}
+
+Field with contents using fixed size (unused bytes are all set to \texttt{0xFF}):
+\begin{tcblisting}{}
+\begin{tikzpicture}[]
+	\begin{dsrecord*}
+		\dsfieldfixed{15}{John~Taylor}
+	\end{dsrecord*}
+\end{tikzpicture}
+\end{tcblisting}
+
+Starred field commands typeset in a compact form:
+\begin{tcblisting}{}
+\begin{tikzpicture}[]
+	\begin{dsrecord*}
+		\dsfieldprefixed{John~Taylor}
+	\end{dsrecord*}
+	
+	\begin{dsrecord*}[][yshift = -2.5em)]
+		\dsfieldprefixed*{John~Taylor}
+	\end{dsrecord*}
+\end{tikzpicture}
+\end{tcblisting}
+
+Records are groups of fields:
+\begin{tcblisting}{}
+\begin{tikzpicture}[]
+	\begin{dsrecord}
+		\dsfieldprefixed*{John~Taylor}   % name
+		\dsfieldfixed*{2}{NY}            % state
+		\dsfieldfixed*{10}{08/23/1988}   % birth date
+	\end{dsrecord}
+
+	\begin{dsrecord}[][yshift = -1cm]
+		\dsfieldprefixed*{John~Taylor}
+		\dsfieldspace
+		\dsfieldfixed*{2}{NY}
+		\dsfieldspace
+		\dsfieldfixed*{10}{08/23/1988}
+	\end{dsrecord}
+
+	\begin{dsrecord*}[][yshift = -2cm]
+		\dsfieldprefixed*{John~Taylor}
+		\dsfieldspace
+		\dsfieldfixed*{2}{NY}
+		\dsfieldspace
+		\dsfieldfixed*{10}{08/23/1988}
+	\end{dsrecord*}
+\end{tikzpicture}
+\end{tcblisting}
+
+Records with terminator (default: \texttt{0x01}):
+\begin{tcblisting}{}
+\begin{tikzpicture}[]
+	\begin{dsrecord}[terminator]
+		\dsfieldprefixed*{John~Taylor}
+		\dsfieldfixed*{2}{NY}
+		\dsfieldfixed*{10}{08/23/1988}
+	\end{dsrecord}
+\end{tikzpicture}
+\end{tcblisting}
+
+Records with binary length prefix (little endian with 2 bytes):
+\begin{tcblisting}{}
+\begin{tikzpicture}[]
+	\begin{dsrecord}[prefix]
+		\dsfieldprefixed*{John~Taylor}
+		\dsfieldfixed*{2}{NY}
+		\dsfieldfixed*{10}{08/23/1988}
+	\end{dsrecord}
+\end{tikzpicture}
+\end{tcblisting}
+
+
+Records with fixed length (unused bytes are set to \texttt{0xFE}):
+\begin{tcblisting}{}
+\begin{tikzpicture}[]
+	\begin{dsrecord}[length = 40]
+		\dsfieldprefixed*{John~Taylor}
+		\dsfieldfixed*{2}{NY}
+		\dsfieldfixed*{10}{08/23/1988}
+	\end{dsrecord}
+	
+	\begin{dsrecord}[length = 50][yshift = -1cm]
+		\dsfieldprefixed*{John~Taylor}
+		\dsfieldfixed*{2}{NY}
+		\dsfieldfixed*{10}{08/23/1988}
+	\end{dsrecord}
+\end{tikzpicture}
+\end{tcblisting}
+
+When a record is marked as deleted, its first eight bytes as set to:
+\begin{itemize}
+	\item Two bytes to tell the total length of available space (big endian);
+	\item The two-byte magic number \texttt{0xFFFF} that states ``deleted'';
+	\item An optional four-byte address used in linked lists as a ``next'' field (big endian).
+\end{itemize}
+\begin{tcblisting}{}
+\begin{tikzpicture}
+	\begin{dsrecord}[terminator]
+		\dsfieldterminator*{John~Taylor}
+		\dsfieldspace
+		\dsfieldprefixed*{2}{NY}
+		\dsfieldspace
+		\dsfieldfixed*{10}{08/23/1988}
+	\end{dsrecord}
+	\begin{dsrecord}[terminator, deleted][yshift = -2.5em]
+		\dsfieldterminator*{John~Taylor}
+		\dsfieldspace
+		\dsfieldprefixed*{2}{NY}
+		\dsfieldspace
+		\dsfieldfixed*{10}{08/23/1988}
+	\end{dsrecord}
+	\begin{dsrecord}[terminator, deleted, next = 0xDA4][yshift = -5em]
+		\dsfieldterminator*{John~Taylor}
+		\dsfieldspace
+		\dsfieldprefixed*{2}{NY}
+		\dsfieldspace
+		\dsfieldfixed*{10}{08/23/1988}
+	\end{dsrecord}
+\end{tikzpicture}
+\end{tcblisting}
+
+
+To save effort, a new record structure can be defined.
+\begin{tcblisting}{}
+\dsnewnamedrecord{record_one}{
+	\dsfieldprefixed*,
+	\dsfieldspace\dsfieldfixed*{2},
+	\dsfieldspace\dsfieldfixed*{10}
+}
+
+\dsnewnamedrecord{record_two}{
+	\dsfieldfixed*{20},
+	\dsfieldspace\dsfieldfixed*{2},
+	\dsfieldspace\dsfieldfixed*{10}
+}
+
+
+\begin{tikzpicture}
+	\dsnamedrecord{record_one}{John~Taylor, NY, 08/23/1988}
+\end{tikzpicture}
+
+\begin{tikzpicture}
+	\dsnamedrecord[prefix]{record_one}{Michael~Smith, TX, 01/18/2001}
+\end{tikzpicture}
+
+\begin{tikzpicture}
+	\dsnamedrecord[terminator]{record_two}{José~João~Afrânio, SP, 11/03/1944}
+\end{tikzpicture}
+
+\begin{tikzpicture}
+	\dsnamedrecord[deleted, terminator]{record_two}{José~João~Afrânio, SP,
+		11/03/1944}
+\end{tikzpicture}
+\end{tcblisting}
+
+\subsubsection{References}
+
+A record structure can be named (default name is \textit{record}) and each field is named \specname{record name}\texttt{-field-}$n$, starting at zero. Whenever possible, also the field names can be used.
+
+\begin{tcblisting}{}
+\usedslibrary{record}
+\begin{tikzpicture}[remember picture]
+	\dsrecordstructure[name = {my record}, % name a record
+		hide structure offsets]{name/15, status/1, n/2, phone/30/15,
+			e-mail/50/20}
+	
+	\foreach \f[count = \n] in {field-0, field-3, e-mail, phone}{
+		\draw[latex-, font = \scriptsize]
+			(my record-\f) -- ++(-1em, -\n * 1.2em - 1em)
+			node[below] {\texttt{(my record-\f)}};
+	}
+	
+	\draw[latex-, font = \scriptsize] (my record) -- ++(1em, 2em)
+		node[above] {\texttt{(my record)}};
+\end{tikzpicture}\par
+\end{tcblisting}
+
+Records with contents are also named and have the following labels alongside the whole record:
+\begin{itemize}
+	\item Each byte is \specname{record name}\texttt{-byte-}$n$ ($n \geq 0$);
+	\item Each field is \specname{record name}\texttt{-field-}$n$ ($n \geq 0$);
+\end{itemize}
+
+\begin{tcblisting}{}
+\begin{tikzpicture}
+	\begin{dsrecord}
+		\dsfieldterminator*{John~Taylor}
+		\dsfieldspace
+		\dsfieldprefixed*{2}{NY}
+		\dsfieldspace
+		\dsfieldfixed*{10}{08/23/1988}
+	\end{dsrecord}
+	
+	\draw[latex-, thick] (record) -- ++(2em, -6em)
+		node[font = \scriptsize, below] {\texttt{(record)}};
+
+	\foreach \f in {0, 1, 2}{
+		\draw[latex-]
+			(record-field-\f) -- ++(\f * 1em - 2em, \f * 1.2em + 2em)
+			node[font = \scriptsize, above] {\texttt{(record-field-\f)}};
+	}
+	
+	\foreach \b[count = \n] in {0, 1, 2, 4, 11, 12, 22, 23, 24}{
+		\draw[latex-]
+			(record-byte-\b.south) -- ++(-0.5em, \n * -1.2em - 1em)
+			-- ++(-1em, 0)
+			node[font = \scriptsize, below left,
+				anchor = east] {\texttt{(record-byte-\b)}};
+	}
+\end{tikzpicture}
+\end{tcblisting}
+
+Some record organization bytes are also labelled (if present):
+\begin{itemize}
+	\item the record terminator (\specname{record name}\texttt{-terminator});
+	\item the prefixed record size (\specname{record name}\texttt{-prefix});
+	\item the fragmentation of fixed length records (\specname{record name}\texttt{-fragmentation}).
+\end{itemize}
+
+\begin{tcblisting}{}
+\begin{tikzpicture}[]
+	\begin{dsrecord}[terminator]
+		\dsfieldterminator*{John~Taylor}
+		\dsfieldspace
+		\dsfieldprefixed*{2}{NY}
+		\dsfieldspace
+		\dsfieldfixed*{10}{08/23/1988}
+	\end{dsrecord}
+	\draw[latex-, font = \scriptsize] (record-terminator) -- ++ (1em, 2em)
+		node[above]{\texttt{(record-terminator)}};
+
+	\begin{dsrecord}[prefix][yshift = -2.5em]
+		\dsfieldterminator*{John~Taylor}
+		\dsfieldspace
+		\dsfieldprefixed*{2}{NY}
+		\dsfieldspace
+		\dsfieldfixed*{10}{08/23/1988}
+	\end{dsrecord}
+	\draw[latex-, font = \scriptsize] (record-prefix) -- ++ (-2em, 1em)
+		node[left]{\texttt{(record-prefix)}};
+
+	\begin{dsrecord}[length = 30][yshift = -5em]
+		\dsfieldterminator*{John~Taylor}
+		\dsfieldspace
+		\dsfieldprefixed*{2}{NY}
+		\dsfieldspace
+		\dsfieldfixed*{10}{08/23/1988}
+	\end{dsrecord}
+	\draw[decorate,
+		decoration = {brace, mirror, amplitude = 0.4em, raise = 0.3em}]
+		(record-fragmentation.south west) --
+		(record-fragmentation.south east)
+		node[font = \scriptsize,
+			midway, yshift = -1.5em]{\texttt{(record-fragmentation)}};
+\end{tikzpicture}
+\end{tcblisting}
+
+a
