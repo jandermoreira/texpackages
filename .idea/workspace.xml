@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7b65142b-6f64-4514-b4da-bcadd61b1d6f" name="Changes" comment="Config">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="7b65142b-6f64-4514-b4da-bcadd61b1d6f" name="Changes" comment="Update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/beamertheme-SaoCarlos/beamercolorthemeSaoCarlos.tex" beforeDir="false" afterPath="$PROJECT_DIR$/beamertheme-SaoCarlos/beamercolorthemeSaoCarlos-doc.tex" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/beamercolorthemeSaoCarlos.pdf" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +38,7 @@
     "settings.editor.selected.configurable": "advanced.settings"
   }
 }]]></component>
-  <component name="RunManager" selected="LaTeX.beamerthemelalic-exemplo">
+  <component name="RunManager" selected="LaTeX.algxpar-doc">
     <configuration default="true" type="Application" factoryName="Application">
       <module name="local" />
       <method v="2">
@@ -84,7 +81,7 @@
         <sumatra-path />
         <pdf-viewer>EVINCE</pdf-viewer>
         <viewer-command />
-        <compiler-arguments />
+        <compiler-arguments>-shell-escape</compiler-arguments>
         <envs />
         <main-file />
         <output-path>{projectDir}/docs</output-path>
@@ -95,6 +92,27 @@
         <has-been-run>false</has-been-run>
         <bib-run-config>[]</bib-run-config>
         <makeindex-run-config>[]</makeindex-run-config>
+      </texify>
+      <method v="2" />
+    </configuration>
+    <configuration name="algxpar-doc" type="LATEX_RUN_CONFIGURATION" factoryName="LaTeX configuration factory" temporary="true">
+      <texify>
+        <compiler>PDFLATEX</compiler>
+        <compiler-path />
+        <sumatra-path />
+        <pdf-viewer>EVINCE</pdf-viewer>
+        <viewer-command />
+        <compiler-arguments>-shell-escape</compiler-arguments>
+        <envs />
+        <main-file>$PROJECT_DIR$/algxpar/algxpar-doc.tex</main-file>
+        <output-path>$PROJECT_DIR$/docs</output-path>
+        <auxil-path>{projectDir}/auxil</auxil-path>
+        <compile-twice>false</compile-twice>
+        <output-format>PDF</output-format>
+        <latex-distribution>TEXLIVE</latex-distribution>
+        <has-been-run>true</has-been-run>
+        <bib-run-config>[]</bib-run-config>
+        <makeindex-run-config>[Makeindex.algxpar-doc makeindex]</makeindex-run-config>
       </texify>
       <method v="2" />
     </configuration>
@@ -149,6 +167,15 @@
       </texify-makeindex>
       <method v="2" />
     </configuration>
+    <configuration name="algxpar-doc makeindex" type="MAKEINDEX_RUN_CONFIGURATION" factoryName="LaTeX configuration factory">
+      <texify-makeindex>
+        <program>MAKEINDEX</program>
+        <main-file>$PROJECT_DIR$/algxpar/algxpar-doc.tex</main-file>
+        <command-line-args />
+        <work-dir>$PROJECT_DIR$/docs</work-dir>
+      </texify-makeindex>
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="Remote">
       <option name="USE_SOCKET_TRANSPORT" value="true" />
       <option name="SERVER_MODE" value="false" />
@@ -160,6 +187,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="LaTeX.algxpar-doc" />
         <item itemvalue="LaTeX.beamerthemelalic-exemplo" />
         <item itemvalue="LaTeX.beamercolorthemeSaoCarlos" />
       </list>
@@ -184,9 +212,10 @@
     <MESSAGE value="Update docs" />
     <MESSAGE value="Rename" />
     <MESSAGE value="Update README.md" />
-    <MESSAGE value="Update" />
     <MESSAGE value="Update .gitignore" />
     <MESSAGE value="Config" />
-    <option name="LAST_COMMIT_MESSAGE" value="Config" />
+    <MESSAGE value="Standard naming" />
+    <MESSAGE value="Update" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update" />
   </component>
 </project>
