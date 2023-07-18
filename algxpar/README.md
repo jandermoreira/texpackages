@@ -6,7 +6,19 @@ This package extends the algorithmicx package (algpseudocode) to support multili
 
 If you prefer, copy `algxpar.sty` and the appropriate `*.kw.tex`  to somewhere in your $\TeX$ path.
 
-## Licence
+Files to use the package:  
+* `algxpar.sty`
+* `algxpar-english.kw.tex`
+* `algxpar-brazilian.kw.tex`
+
+Manual:
+* `algxpar-doc.pdf`(see directory [`docs`](../docs/).
+
+Files to compile the manual (requires `pygmentize` and some other packages)
+* `algxpar-doc.tex`
+* `algxpar-lzw.tex`
+
+## License
 Copyright (C) 2019-2023 by Jander Moreira (moreira.jander@gmail.com)
 
 This work may be distributed and/or modified under the conditions of the LaTeX Project Public License, either version 1.3c of this license or (at your option) any later version.
@@ -17,15 +29,3 @@ version 2005/12/01 or later.
 This work has the LPPL maintenance status `maintained'.
 
 The Current Maintainer of this work is Jander Moreira.
-
-Files to use the package:  
-* `algxpar.sty`
-* `algxpar-english.kw.tex`
-* `algxpar-brazilian.kw.tex`
-
-Manual:
-* `algxpar-doc.pdf`
-
-Files to compile the manual (requires `pygmentize` and some other packages)
-* `algxpar-doc.tex`
-* `algxpar-lzw.tex`
