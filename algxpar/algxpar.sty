@@ -22,7 +22,7 @@
 \RequirePackage{varwidth}
 \RequirePackage{ifthen}
 \RequirePackage{tikz}
-\usetikzlibrary{calc}
+\usetikzlibrary{calc, arrows}
 % \RequirePackage{listings} % to load verbatim with tabs
 % \RequirePackage{tcolorbox} % to save verbatim
 
@@ -102,7 +102,16 @@
 
 \ExplSyntaxOff
 
+%% Settings
+\newif\ifaxp@NoEnd\axp@NoEndfalse  % whether line with 'end' is used or not
+\newif\ifaxp@IsStatement\axp@IsStatementfalse  % set in \Statep
+\newif\ifaxp@ShowBoxes\axp@ShowBoxesfalse  % show parboxes for debugging
+\newif\ifaxp@LineBalanceAuto  % true for 'auto'; false for 'fixed'
+\newif\ifaxp@IndentLines\axp@IndentLinesfalse % draw lines in blocks
+
+
 \NewDocumentCommand{\axp@DisableEnds}{}{%
+    \axp@NoEndtrue%
     \RenewDocumentCommand{\ALG@noend}{}{t}%
     \algtext*{EndWhile}%
     \algtext*{EndFor}%
@@ -116,6 +125,7 @@
 }
 
 \NewDocumentCommand{\axp@EnableEnds}{}{%
+    \axp@NoEndfalse%
     \RenewDocumentCommand{\ALG@noend}{}{f}%
     \algrenewtext{EndWhile}{\Keyword{endwhile}}%
     \algrenewtext{EndFor}{\Keyword{endfor}}%
@@ -128,13 +138,6 @@
     \algrenewtext{EndOtherwise}{\Keyword{endotherwise}}%
 }
 \axp@EnableEnds  % update end-line texts
-
-%% Settings
-\newif\ifaxp@NoEnd\axp@NoEndfalse  % whether line with 'end' is used or not
-\newif\ifaxp@IsStatement\axp@IsStatementfalse  % set in \Statep
-\newif\ifaxp@ShowBoxes\axp@ShowBoxesfalse  % show parboxes for debugging
-\newif\ifaxp@LineBalanceAuto  % true for 'auto'; false for 'fixed'
-\newif\ifaxp@IndentLines\axp@IndentLinesfalse % draw lines in blocks
 
 %% General options
 %! formatter = off
@@ -172,6 +175,7 @@
     parameter indent/.store in = \axp@ParameterIndent,
     %
     lines/.is if = axp@IndentLines,
+    indent line/.code = {\tikzset{indent line/.style = {#1}}},
     %
     show boxes/.is if = axp@ShowBoxes,
     %
@@ -244,6 +248,7 @@
     statement indent = 1em,
     parameter indent = 0pt,
     lines = false,
+    indent line = {lightgray, thick},
     show boxes = false,
     comment width = auto,
 }
@@ -312,32 +317,55 @@
 \newlength{\axp@CommentWidth}
 
 %%%%%%%% LINES
+
 %! formatter = off
 \NewDocumentCommand{\axp@MarkLineBegin}{}{%
     \ifaxp@IndentLines%
         \stepcounter{axp@BlockLevelCounter}%
         \tikz[remember picture] \coordinate (axp-block-start-\theaxp@BlockLevelCounter) (0, 0);%
+        % \tikz[remember picture, overlay] \draw[<-] (axp-block-start-\theaxp@BlockLevelCounter) -- ++ (-4em, 0.5ex) node[anchor = east] {B:\theaxp@BlockLevelCounter};%
     \fi%
 }%
-\NewDocumentCommand{\axp@MarkLineEnd}{}{%
+
+\NewDocumentCommand{\axp@MarkLineEndShort}{}{%
     \ifaxp@IndentLines%
         \tikz[remember picture] \coordinate (axp-block-end-\theaxp@BlockLevelCounter) (0, 0);%
-        \ifaxp@NoEnd%
-            \begin{tikzpicture}[remember picture, overlay]
-                \draw[gray]
-                ($ (axp-block-start-\theaxp@BlockLevelCounter) + (0.3ex, -0.5ex) $)
-                --
-                ($ (axp-block-end-\theaxp@BlockLevelCounter) +  (0.3ex, 1em) $);
-            \end{tikzpicture}%
-        \else%
-            \begin{tikzpicture}[remember picture, overlay]
-                \draw[gray]
-                ($ (axp-block-start-\theaxp@BlockLevelCounter) + (0.3ex, -0.5ex) $)
-                --
-                ($ (axp-block-end-\theaxp@BlockLevelCounter)  + (0.3ex, 0) $)
-                |- ++ (1ex, 0);
-            \end{tikzpicture}%
-        \fi%
+        \begin{tikzpicture}[remember picture, overlay]
+            \draw[indent line]
+            ($ (axp-block-start-\theaxp@BlockLevelCounter) + (0.3ex, -1ex) $)
+            --
+            ($ (axp-block-end-\theaxp@BlockLevelCounter) +  (0.3ex, 1em) $);
+        \end{tikzpicture}%
+        % \tikz[remember picture, overlay] \draw[dotted, thick, <-] (axp-block-end-\theaxp@BlockLevelCounter) -- ++ (-2em, -1ex) node[anchor = east] {S:\theaxp@BlockLevelCounter};%
+        \addtocounter{axp@BlockLevelCounter}{-1}%
+    \fi%
+}
+
+\NewDocumentCommand{\axp@MarkLineEndCont}{}{%
+    \ifaxp@IndentLines%
+        \tikz[remember picture] \coordinate (axp-block-end-\theaxp@BlockLevelCounter) (0, 0);%
+        \begin{tikzpicture}[remember picture, overlay]
+            \draw[indent line]
+            ($ (axp-block-start-\theaxp@BlockLevelCounter) + (0.3ex, -1ex) $)
+            --
+            ($ (axp-block-end-\theaxp@BlockLevelCounter) +  (0.3ex, 1em) $);
+        \end{tikzpicture}%
+        % \tikz[remember picture, overlay] \draw[dotted, thick, <-] (axp-block-end-\theaxp@BlockLevelCounter) -- ++ (-2em, -1ex) node[anchor = east] {C:\theaxp@BlockLevelCounter};%
+        \addtocounter{axp@BlockLevelCounter}{-1}%
+    \fi%
+}
+
+\NewDocumentCommand{\axp@MarkLineEndFinal}{}{%
+    \ifaxp@IndentLines%
+        \tikz[remember picture] \coordinate (axp-block-end-\theaxp@BlockLevelCounter) (0, 0);%
+        \begin{tikzpicture}[remember picture, overlay]
+            \draw[indent line]
+            ($ (axp-block-start-\theaxp@BlockLevelCounter) + (0.3ex, -1ex) $)
+            --
+            ($ (axp-block-end-\theaxp@BlockLevelCounter)  + (0.3ex, 0) $)
+            |- ++ (1ex, 0);
+        \end{tikzpicture}%
+        % \tikz[remember picture, overlay] \draw[dotted, thick, <-] (axp-block-end-\theaxp@BlockLevelCounter) -- ++ (-4em, -1ex) node[anchor = east] {F:\theaxp@BlockLevelCounter};%
         \addtocounter{axp@BlockLevelCounter}{-1}%
     \fi%
 }
@@ -430,10 +458,23 @@
     %! formatter = on
 }
 
+\newcounter{cont}
+\newif\ifaxp@CloseBlock
 % axp@MakeCommand: builds the command (see axp@DefineCommand)
 % #1 (star): star = end block; no star = begin block
 \NewDocumentCommand{\axp@MakeCommand}{ s }{%
-    \IfBooleanTF{#1}{\axp@MarkLineEnd}{\axp@MarkLineBegin}%
+    % \stepcounter{cont}\thecont.%
+    \IfBooleanTF{#1}{%
+        % (*\theaxp@BlockLevelCounter)
+        \axp@MarkLineEndShort%
+    }{%
+        \ifaxp@CloseBlock%
+            \axp@MarkLineEndCont%
+            \axp@CloseBlockfalse%
+        \fi%
+        \axp@MarkLineBegin%
+        % (\theaxp@BlockLevelCounter)
+    }%
     \axp@DoCommand{%  ajustment for opening/closing blocks
         \IfBooleanTF{#1}{0}{1}%
     }{%  command or module+name
@@ -566,6 +607,7 @@
 
 \newlength{\axp@CurrentIndent}
 
+\newcounter{axp@BlockCounter}
 \newcounter{axp@BlockLevelCounter}
 \NewDocumentCommand{\axp@BeginGroup}{}{%
     \begingroup%
@@ -608,7 +650,7 @@
 \RenewDocumentCommand{\EndWhile}{ O{} D<>{} }{%
     \axp@DefineCommand{\Keyword{endwhile}}{}{}{#1}{#2}%
     \ALG@makeentity{EndWhile}%
-    \ifaxp@NoEnd\else\axp@MarkLineEnd\fi%
+    \ifaxp@NoEnd\axp@MarkLineEndFinal\fi%
     \axp@EndGroup%
 }
 
@@ -628,8 +670,8 @@
 % #4: options
 \RenewDocumentCommand{\Until}{ O{} m O{} D<>{} }{%
     \axp@DefineCommand{\Keyword{until}}{#2}{}{#1#3}{#4}%
-    \axp@MarkLineEnd%
     \ALG@makeentity{Until}%
+    \ifaxp@NoEnd\axp@MarkLineEndFinal\fi%
     \axp@EndGroup%
 }
 
@@ -646,8 +688,8 @@
 % #2: options
 \RenewDocumentCommand{\EndLoop}{ O{} D<>{} }{%
     \axp@DefineCommand{\Keyword{endloop}}{}{}{#1}{#2}%
-    \axp@MarkLineEnd%
     \ALG@makeentity{EndLoop}%
+    \ifaxp@NoEnd\axp@MarkLineEndFinal\fi%
     \axp@EndGroup%
 }
 
@@ -673,20 +715,24 @@
 % #4: options
 \RenewDocumentCommand{\ElsIf}{ O{} m O{} D<>{} }{%
     \axp@DefineCommand{\Keyword{else}~\Keyword{if}}{#2}{\Keyword{then}}{#1#3}{#4}%
+    \axp@CloseBlocktrue%
     \ALG@makeentity{ElsIf}%
+    % \ifaxp@NoEnd\axp@MarkLineEndCont\fi%
 }
 % #1: comment
 % #2: options
 \RenewDocumentCommand{\Else}{ O{} D<>{} }{%
     \axp@DefineCommand{\Keyword{else}}{}{}{#1}{#2}%
+    \axp@CloseBlocktrue%
     \ALG@makeentity{Else}%
+    % \ifaxp@NoEnd\axp@MarkLineEndCont\fi%
 }
 % #1: comment
 % #2: options
 \RenewDocumentCommand{\EndIf}{ O{} D<>{} }{%
     \axp@DefineCommand{\Keyword{endif}}{}{}{#1}{#2}%
-    \axp@MarkLineEnd%
     \ALG@makeentity{EndIf}%
+    \ifaxp@NoEnd\axp@MarkLineEndFinal\fi%
     \axp@EndGroup%
 }
 
@@ -710,8 +756,8 @@
 % #2: options
 \RenewDocumentCommand{\EndSwitch}{ O{} D<>{} }{%
     \axp@DefineCommand{\Keyword{endswitch}}{}{}{#1}{#2}%
-    \axp@MarkLineEnd%
     \ALG@makeentity{EndSwitch}%
+    \ifaxp@NoEnd\axp@MarkLineEndFinal\fi%
     \axp@EndGroup
 }
 % #1: old style comment
@@ -727,8 +773,8 @@
 % #2: options
 \RenewDocumentCommand{\EndCase}{ O{} D<>{} }{%
     \axp@DefineCommand{\Keyword{endcase}}{}{}{#1}{#2}%
-    \axp@MarkLineEnd%
     \ALG@makeentity{EndCase}%
+    \ifaxp@NoEnd\axp@MarkLineEndFinal\fi%
     \axp@EndGroup
 }
 % #1: comment
@@ -742,8 +788,8 @@
 % #2: options
 \RenewDocumentCommand{\EndOtherwise}{ O{} D<>{} }{%
     \axp@DefineCommand{\Keyword{endotherwise}}{}{}{#1}{#2}%
-    \axp@MarkLineEnd%
     \ALG@makeentity{EndOtherwise}%
+    \ifaxp@NoEnd\axp@MarkLineEndFinal\fi%
     \axp@EndGroup
 }
 
@@ -794,7 +840,7 @@
 \RenewDocumentCommand{\EndFor}{ O{} D<>{} }{%
     \axp@DefineCommand{\Keyword{endfor}}{}{}{#1}{#2}%
     \ALG@makeentity{EndFor}%
-    \ifaxp@NoEnd\else\axp@MarkLineEnd\fi%
+    \ifaxp@NoEnd\axp@MarkLineEndFinal\fi%
     \axp@EndGroup
 }
 
