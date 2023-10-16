@@ -67,18 +67,18 @@
 	% 	% {¿}{{?`}}1
 }
 
-%
-% Floats para programas
-%
-\RequirePackage{newfloat}
-\DeclareFloatingEnvironment[
-	fileext = prog,
-	listname = {Lista de programas},
-	name = Programa,
-	placement = tbhp,
-	within = chapter,
-	chapterlistsgaps = off,
-]{program}
+% %
+% % Floats para programas
+% %
+% \RequirePackage{newfloat}
+% \DeclareFloatingEnvironment[
+% 	fileext = prog,
+% 	listname = {Lista de programas},
+% 	name = Programa,
+% 	placement = tbhp,
+% 	within = chapter,
+% 	chapterlistsgaps = off,
+% ]{program}
 
 % Apóstrofe reto em \texttt
 % Extraído de https://tex.stackexchange.com/questions/436308/changing-all-single-quotes-to-be-straight-when-within-texttt
@@ -101,7 +101,6 @@
 \newcommand{\CodeStringc}[1]{{\normalfont\ttfamily''{\sqtext{#1}}''}}
 
 
-\RequirePackage{listings}
 %\RequirePackage{xstring}
 \newcommand{\inputlisting}[2][]{%
     \lstinputlisting[#1]{#2}
